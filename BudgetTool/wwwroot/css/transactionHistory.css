@@ -22,11 +22,11 @@
     align-items: center;
 }
 
-#yearSelector, #monthSelector {
+.historySelector {
     width: 90%;
     margin: 0 auto;
     margin-top: 0.8em;
-    height:35%;
+    height: 35%;
     border: 1px solid grey;
 }
 #yearSelector {
@@ -34,4 +34,9 @@
 }
 #monthSelector {
     margin-bottom: 0.8em;
+}
+
+.yearMonthDropdownShow {
+    background-color: green;
+    height:200px;
 }

@@ -1,9 +1,28 @@
 ﻿let accountTransactionHistory = [];
 
+const yearSelector = document.getElementById("yearSelector");
+
+yearSelector.addEventListener("click", (event) => {
+    yearSelector.classList.toggle("yearMonthDropdownShow");
+    if (yearSelector.classList.contains("yearMonthDropdownShow")) {
+        generateSelectionMenu();
+    }
+    else {
+        yearSelector.innerHTML = "";
+    }
+    event.stopPropagation();
+});
+
+window.addEventListener('click', () => {
+    if (yearSelector.classList.contains('yearMonthDropdownShow')) {
+        yearSelector.classList.remove('yearMonthDropdownShow');
+        yearSelector.innerText = "";
+    }
+});
+
 window.onload = async function () {
     await loadTransactionHistory();
     displayData();
-    generateSelectionMenu();
 }
 
 async function loadTransactionHistory() {
@@ -39,11 +58,9 @@ function groupTransactionsByYear() {
 
 function generateSelectionMenu() {
     let yearsAndMonths = groupTransactionsByYear();
-
-    yearSelector = document.getElementById("yearSelector");
     let years = "";
     for (const year in yearsAndMonths) {
-        years += year;
+        years += year + "<br>";
     }
     yearSelector.innerHTML = years;
 }
