@@ -1,0 +1,18 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build results
+[Bb]in/
+[Oo]bj/
+
+# Rider/VSCode (optional, harmless if unused)
+.idea/
+.vscode/
+
+# NuGet
+packages/
+*.nupkg
+
+# EF Core migrations are fine to keep, don't ignore those
