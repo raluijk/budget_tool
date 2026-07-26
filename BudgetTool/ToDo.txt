@@ -1,0 +1,1 @@
+﻿Create JS functions for getting data

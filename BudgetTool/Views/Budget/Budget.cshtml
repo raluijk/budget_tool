@@ -1,0 +1,51 @@
+﻿@{
+    ViewData["Title"] = "My Budget";
+}
+
+<link rel="stylesheet" href="~/css/budget.css" />
+
+<div class="budget-layout">
+
+    @if (Model == null)
+    {
+        <p>No items found.</p>
+    }
+    else
+    {
+        <div class="budget-table">
+            <div class="card rounded-0 border-0 shadow">
+                <div class="card-body p-5">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Description</th>
+                                    <th scope="col">Type</th>
+                                    <th scope="col">Expense/Income</th>
+                                    <th scope="col">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                    <a class="btn btn-primary rounded-0 btn-block" id="insertRow" href="#">Add new row</a>
+                    <a class="btn btn-primary rounded-0 btn-block" id="btnUpdate" href="#" onclick="enableTableCells()">Update</a>
+                    <a class="btn btn-primary rounded-0 btn-block" id="btnCancel" href="#" onclick="disableTableCells()">Cancel</a>
+                    <a class="btn btn-primary rounded-0 btn-block" id="saveChanges" href="#" onclick="updateBudgetForAccount()">Save Changes</a>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="budget-pie-chart">
+        <canvas id="budgetPieChart"></canvas>
+    </div>
+
+</div>
+
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <script src="~/js/budgetPage.js"></script>
+}

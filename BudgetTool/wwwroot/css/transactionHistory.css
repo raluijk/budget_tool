@@ -1,0 +1,37 @@
+﻿#yearAndMonthsMenuContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 60vh;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+}
+
+#yearAndMonthsMenu {
+    width: 23%;
+    height: 30%;
+    background-color: white;
+    border: 2px solid black;
+    border-radius: 4px;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+}
+
+#yearSelector, #monthSelector {
+    width: 90%;
+    margin: 0 auto;
+    margin-top: 0.8em;
+    height:35%;
+    border: 1px solid grey;
+}
+#yearSelector {
+    margin-top: 0.8em;
+}
+#monthSelector {
+    margin-bottom: 0.8em;
+}

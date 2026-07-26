@@ -1,0 +1,65 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+    background-image: url(/Images/19729.jpg);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
+
+.header, .footer {
+    background-color: white;
+    border: 2px;
+    border-color: black;
+    border-style: solid;
+}
+
+.header {
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+}
+
+.footer {
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+.foreground-text {
+    margin-top: 2.5vh;
+    margin-left: 2%;
+    margin-right: 2%;
+    border-radius: 15px;
+    border: 2px;
+    border-color: black;
+    border-style: solid;
+    height: 75vh;
+    background-color: white;
+}
