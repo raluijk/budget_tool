@@ -1,22 +1,39 @@
 ﻿let accountTransactionHistory = [];
+let selectedYear = null;
 
 const yearSelector = document.getElementById("yearSelector");
+yearSelector.classList.add('historySelector-closed');
+yearSelector.textContent = "Select Year";
 
 yearSelector.addEventListener("click", (event) => {
+    event.stopPropagation();
+
+    const yearOption = event.target.closest(".year-option");
+
+    if (yearOption) {
+        selectedYear = yearOption.dataset.year;
+        yearSelector.classList.remove("yearMonthDropdownShow");
+        yearSelector.classList.add('historySelector-closed');
+        yearSelector.textContent = selectedYear;
+        return;
+    }
+
     yearSelector.classList.toggle("yearMonthDropdownShow");
     if (yearSelector.classList.contains("yearMonthDropdownShow")) {
+        yearSelector.classList.remove('historySelector-closed');
         generateSelectionMenu();
     }
     else {
-        yearSelector.innerHTML = "";
+        yearSelector.classList.add('historySelector-closed');
+        yearSelector.textContent = selectedYear || "Select Year";
     }
-    event.stopPropagation();
 });
 
 window.addEventListener('click', () => {
     if (yearSelector.classList.contains('yearMonthDropdownShow')) {
         yearSelector.classList.remove('yearMonthDropdownShow');
-        yearSelector.innerText = "";
+        yearSelector.classList.add('historySelector-closed');
+        yearSelector.textContent = selectedYear || "Select a year";
     }
 });
 
@@ -58,11 +75,15 @@ function groupTransactionsByYear() {
 
 function generateSelectionMenu() {
     let yearsAndMonths = groupTransactionsByYear();
+    yearSelector.innerHTML = "";
     let years = "";
     for (const year in yearsAndMonths) {
-        years += year + "<br>";
+        const yearOption = document.createElement("div");
+        yearOption.classList.add("year-option");
+        yearOption.textContent = year;
+        yearOption.dataset.year = year;
+        yearSelector.appendChild(yearOption);
     }
-    yearSelector.innerHTML = years;
 }
 
 function displayData() {

@@ -8,7 +8,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 1000;
+    z-index: 999;
 }
 
 #yearAndMonthsMenu {
@@ -24,19 +24,44 @@
 
 .historySelector {
     width: 90%;
+    max-height: 15em;
     margin: 0 auto;
     margin-top: 0.8em;
-    height: 35%;
     border: 1px solid grey;
+    border-radius: 4px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    user-select: none;
+    cursor: pointer;
 }
+
+.historySelector-closed {
+    padding: 0.6em;
+    text-align: center;
+    background-color: white;
+    color: black;
+}
+
 #yearSelector {
     margin-top: 0.8em;
 }
+
 #monthSelector {
     margin-bottom: 0.8em;
 }
+#monthSelector:empty {
+    min-height: 3em;
+}
 
-.yearMonthDropdownShow {
+.year-option {
     background-color: green;
-    height:200px;
+    color: yellow;
+    text-align: center;
+    padding-top: 0.6em;
+    height: 3em;
+    border-bottom: solid 2px black;
+}
+
+.year-option:last-child {
+    border-bottom: none;
 }
