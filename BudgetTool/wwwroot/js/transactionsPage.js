@@ -1,27 +1,57 @@
 ﻿let accountTransactionHistory = [];
+let monthsForSelectedYear = [];
+let monthsGroupedByYear = {};
+
+let yearsAndMonthsToCompare = [];
+
 let selectedYear = null;
+let selectedMonth = null;
 
 const yearSelector = document.getElementById("yearSelector");
 yearSelector.classList.add('historySelector-closed');
 yearSelector.textContent = "Select Year";
+const monthSelector = document.getElementById("monthSelector");
+monthSelector.classList.add('historySelector-closed');
+monthSelector.textContent = "Select Month";
+
+const buttonCancel = document.getElementById("buttonCancel");
+const buttonOkay = document.getElementById("buttonOkay");
+
+buttonCancel.addEventListener('click', () => {
+    document.getElementById("yearAndMonthsMenuContainer").style.display = "none";
+});
+
+buttonOkay.addEventListener('click', () => {
+    document.getElementById("yearAndMonthsMenuContainer").style.display = "none";
+    yearsAndMonthsToCompare.push({ year: selectedYear, month: selectedMonth });
+});
 
 yearSelector.addEventListener("click", (event) => {
     event.stopPropagation();
 
     const yearOption = event.target.closest(".year-option");
 
+    monthSelector.classList.add('historySelector-closed');
+    monthSelector.textContent = "Select Month";
+    if (monthSelector.style.display == "block") {
+        monthSelector.style.display = "none";
+    } else {
+        monthSelector.style.display = "block";
+    }
+
     if (yearOption) {
         selectedYear = yearOption.dataset.year;
         yearSelector.classList.remove("yearMonthDropdownShow");
         yearSelector.classList.add('historySelector-closed');
         yearSelector.textContent = selectedYear;
+        monthsForSelectedYear = monthsGroupedByYear[selectedYear];
         return;
     }
 
     yearSelector.classList.toggle("yearMonthDropdownShow");
     if (yearSelector.classList.contains("yearMonthDropdownShow")) {
         yearSelector.classList.remove('historySelector-closed');
-        generateSelectionMenu();
+        generateYearSelectionMenu();
     }
     else {
         yearSelector.classList.add('historySelector-closed');
@@ -29,12 +59,70 @@ yearSelector.addEventListener("click", (event) => {
     }
 });
 
+monthSelector.addEventListener("click", (event) => {
+    event.stopPropagation();
+
+    const monthOption = event.target.closest(".month-option");
+
+    if (monthOption) {
+        selectedMonth = monthOption.dataset.month;
+        monthSelector.classList.remove("yearMonthDropdownShow");
+        monthSelector.classList.add('historySelector-closed');
+        monthSelector.textContent = selectedMonth;
+        return;
+    }
+
+    monthSelector.classList.toggle("yearMonthDropdownShow");
+    if (monthSelector.classList.contains("yearMonthDropdownShow")) {
+        monthSelector.classList.remove('historySelector-closed');
+        generateMonthSelectionMenu();
+    }
+    else {
+        monthSelector.classList.add('historySelector-closed');
+        monthSelector.textContent = selectedMonth || "Select Month";
+    }
+});
+
+function handleDropdownSelection(event, optionClass, optionKey, menuSelector, defaultText) {
+    event.stopPropagation();
+
+    const clickedOption = event.target.closest(optionClass);
+
+    if (clickedOption) {
+        const value = clickedOption.dataset[optionKey];
+        menuSelector.classList.remove("yearMonthDropdownShow");
+        menuSelector.classList.add('historySelector-closed');
+        menuSelector.textContent = value;
+        return;
+    }
+
+    menuSelector.classList.toggle("yearMonthDropdownShow");
+    if (menuSelector.classList.contains("yearMonthDropdownShow")) {
+        menuSelector.classList.remove('historySelector-closed');
+        generateMonthSelectionMenu();
+    }
+    else {
+        menuSelector.classList.add('historySelector-closed');
+        menuSelector.textContent = value || defaultText;
+    }
+};
+
 window.addEventListener('click', () => {
+    monthSelector.style.display = 'block';
     if (yearSelector.classList.contains('yearMonthDropdownShow')) {
         yearSelector.classList.remove('yearMonthDropdownShow');
         yearSelector.classList.add('historySelector-closed');
         yearSelector.textContent = selectedYear || "Select a year";
     }
+    if (monthSelector.classList.contains('yearMonthDropdownShow')) {
+        monthSelector.classList.remove('yearMonthDropdownShow');
+        monthSelector.classList.add('historySelector-closed');
+        monthSelector.textContent = selectedMonth || "Select a month";
+    }
+});
+
+window.addEventListener('click', () => {
+    
 });
 
 window.onload = async function () {
@@ -70,20 +158,34 @@ function groupTransactionsByYear() {
             monthArray[i] = monthOrder[currentMonth - 1];
         }
     }
-    return groupedByYear;
+    monthsGroupedByYear = groupedByYear
 }
 
-function generateSelectionMenu() {
-    let yearsAndMonths = groupTransactionsByYear();
+function generateYearSelectionMenu() {
+    groupTransactionsByYear();
     yearSelector.innerHTML = "";
     let years = "";
-    for (const year in yearsAndMonths) {
+    for (const year in monthsGroupedByYear) {
         const yearOption = document.createElement("div");
         yearOption.classList.add("year-option");
         yearOption.textContent = year;
         yearOption.dataset.year = year;
         yearSelector.appendChild(yearOption);
     }
+}
+
+function generateMonthSelectionMenu() {
+    monthSelector.innerHTML = "";
+    let months = "";
+    console.log("Months for selected year: ", monthsForSelectedYear);
+    for (const month of monthsForSelectedYear) {
+        const monthOption = document.createElement("div");
+        monthOption.classList.add("month-option");
+        monthOption.textContent = month;
+        monthOption.dataset.month = month;
+        monthSelector.appendChild(monthOption);
+    }
+
 }
 
 function displayData() {
