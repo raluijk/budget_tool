@@ -7,6 +7,15 @@ let yearsAndMonthsToCompare = [];
 let selectedYear = null;
 let selectedMonth = null;
 
+let transactionsPieChartLeft;
+let transactionsPieChartRight;
+
+window.onload = async function () {
+    await loadTransactionHistory();
+    loadTransactionsPieChart();
+    displayData();
+}
+
 const yearSelector = document.getElementById("yearSelector");
 yearSelector.classList.add('historySelector-closed');
 yearSelector.textContent = "Select Year";
@@ -121,15 +130,6 @@ window.addEventListener('click', () => {
     }
 });
 
-window.addEventListener('click', () => {
-    
-});
-
-window.onload = async function () {
-    await loadTransactionHistory();
-    displayData();
-}
-
 async function loadTransactionHistory() {
     var response = await fetch('/TransactionHistory/GetTransactionPeriods');
     if (!response.ok) {
@@ -186,6 +186,42 @@ function generateMonthSelectionMenu() {
         monthSelector.appendChild(monthOption);
     }
 
+}
+
+function loadTransactionsPieChart() {
+    const ctxRight = document.getElementById('transactionsPieChartRight').getContext('2d');
+    const ctxLeft = document.getElementById('transactionsPieChartLeft').getContext('2d');
+    let accountTransactionData = [
+        { "description": "Sample Transaction1", "amount": 100, "category": "Sample Category1", "date": "2024-01-01" },
+        { "description": "Sample Transaction2", "amount": 200, "category": "Sample Category2", "date": "2024-01-01" },
+        { "description": "Sample Transaction3", "amount": 300, "category": "Sample Category3", "date": "2024-01-01" },
+        { "description": "Sample Transaction4", "amount": 400, "category": "Sample Category4", "date": "2024-01-01" },
+        { "description": "Sample Transaction5", "amount": 500, "category": "Sample Category5", "date": "2024-01-01" }
+    ];
+    transactionsPieChartRight = new Chart(ctxRight, {
+        type: 'pie',
+        data: {
+            labels: accountTransactionData.map(x => x.description),
+            datasets: [{
+                data: accountTransactionData.map(x => x.amount),
+            }]
+        },
+        options: {
+            radius: '80%'
+        }
+    });
+    transactionsPieChartLeft = new Chart(ctxLeft, {
+        type: 'pie',
+        data: {
+            labels: accountTransactionData.map(x => x.description),
+            datasets: [{
+                data: accountTransactionData.map(x => x.amount),
+            }]
+        },
+        options: {
+            radius: '80%'
+        }
+    });
 }
 
 function displayData() {

@@ -5,8 +5,24 @@
 <link rel="stylesheet" href="~/css/transactionHistory.css" />
 
 <div class="grid-parent">
-    <div class="graph graph-left">Test</div>
-    <div class="graph graph-right">Test2</div>
+    <div class="comparison-container comparison-left">
+        <div class="graph-container">
+            <img src="/Images/angle-left.png" alt="Left" class="arrow">
+            <div class="transactions-pie-chart">
+                <canvas id="transactionsPieChartLeft"></canvas>
+            </div>
+            <img src="/Images/angle-right.png" alt="Right" class="arrow">
+        </div>
+    </div>
+    <div class="comparison-container comparison-right">
+        <div class="graph-container">
+            <img src="/Images/angle-left.png" alt="Left" class="arrow">
+            <div class="transactions-pie-chart">
+                <canvas id="transactionsPieChartRight"></canvas>
+            </div>
+            <img src="/Images/angle-right.png" alt="Right" class="arrow">
+        </div>
+    </div>
 </div>
 
 <div id="yearAndMonthsMenuContainer">
@@ -22,4 +38,5 @@
 
 @section Scripts {
     <script src="~/js/transactionsPage.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 }

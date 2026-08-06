@@ -114,14 +114,54 @@ main {
     justify-content: center;
     align-items: center;
     width: 90%;
-    height: 70vh;
+    height: 75vh;
 }
 
-.graph {
+.comparison-container {
     width: 50%;
     height: 100%;
     border: 2px solid black;
-    border-radius: 4px;
+    border-radius: 15px;
     margin: 2em;
     background-color: white;
+}
+
+.graph-container {
+    width: 90%;
+    height: 80%;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    top: 10%;
+    position: relative;
+}
+
+.arrow {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0; /* prevents arrows from being squeezed by the flex layout */
+    cursor: pointer;
+}
+
+.graph-content {
+    border: solid 2px grey;
+    width: 80%;
+    height: 100%;
+    border-radius: 15px;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.transactions-pie-chart {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    border: 2px solid grey;
+    border-radius: 15px;
+    align-items: center;
+    height: 100%;
+    min-width: 0;
 }
