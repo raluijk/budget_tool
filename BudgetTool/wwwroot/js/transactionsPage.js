@@ -1,18 +1,21 @@
 ﻿let accountTransactionHistory = [];
 let monthsForSelectedYear = [];
 let monthsGroupedByYear = {};
+let transactionItems = new Map();
 
 let yearsAndMonthsToCompare = [];
 
 let selectedYear = null;
 let selectedMonth = null;
+let selectedPeriod = null;
 
 let transactionsPieChartLeft;
 let transactionsPieChartRight;
 
 window.onload = async function () {
+    await loadTransactionItems(1);
     await loadTransactionHistory();
-    loadTransactionsPieChart();
+    loadTransactionsPieChart(1,2,1);
     displayData();
 }
 
@@ -131,7 +134,7 @@ window.addEventListener('click', () => {
 });
 
 async function loadTransactionHistory() {
-    var response = await fetch('/TransactionHistory/GetTransactionPeriods');
+    var response = await fetch('/TransactionPeriod/GetTransactionPeriods');
     if (!response.ok) {
         console.error("Could not load transaction history. Status: " + response.status);
         return;
@@ -188,40 +191,89 @@ function generateMonthSelectionMenu() {
 
 }
 
-function loadTransactionsPieChart() {
-    const ctxRight = document.getElementById('transactionsPieChartRight').getContext('2d');
-    const ctxLeft = document.getElementById('transactionsPieChartLeft').getContext('2d');
-    let accountTransactionData = [
-        { "description": "Sample Transaction1", "amount": 100, "category": "Sample Category1", "date": "2024-01-01" },
-        { "description": "Sample Transaction2", "amount": 200, "category": "Sample Category2", "date": "2024-01-01" },
-        { "description": "Sample Transaction3", "amount": 300, "category": "Sample Category3", "date": "2024-01-01" },
-        { "description": "Sample Transaction4", "amount": 400, "category": "Sample Category4", "date": "2024-01-01" },
-        { "description": "Sample Transaction5", "amount": 500, "category": "Sample Category5", "date": "2024-01-01" }
-    ];
-    transactionsPieChartRight = new Chart(ctxRight, {
+function loadTransactionsPieChart(periodId1, periodId2, accountId) {
+    const itemsForPeriod1 = getItemsForPeriodAndAccount(periodId1, accountId);
+    const itemsForPeriod2 = getItemsForPeriodAndAccount(periodId2, accountId);
+
+    renderPieChart('transactionsPieChartLeft', itemsForPeriod1, 'left');
+    renderPieChart('transactionsPieChartRight', itemsForPeriod2, 'right');
+}
+
+function getItemsForPeriodAndAccount(periodId, accountId) {
+    const items = transactionItems.get(periodId) || [];
+    return items.filter(item => item.accountId === accountId);
+}
+
+function groupByCategoryTotal(items) {
+    return items.reduce((totals, item) => {
+        totals[item.categoryLabel] = (totals[item.categoryLabel] || 0) + item.amount;
+        return totals;
+    }, {});
+}
+
+function renderPieChart(canvasId, items, side) {
+    const grouped = groupByCategoryTotal(items);
+    const labels = Object.keys(grouped);
+    const data = Object.values(grouped);
+    const ctx = document.getElementById(canvasId).getContext('2d');
+
+    if (side === 'left' && transactionsPieChartLeft) {
+        transactionsPieChartLeft.destroy();
+    }
+    if (side === 'right' && transactionsPieChartRight) {
+        transactionsPieChartRight.destroy();
+    }
+
+    const chart = new Chart(ctx, {
         type: 'pie',
         data: {
-            labels: accountTransactionData.map(x => x.description),
-            datasets: [{
-                data: accountTransactionData.map(x => x.amount),
-            }]
+            labels: labels,
+            datasets: [{ data: data }]
         },
-        options: {
-            radius: '80%'
-        }
+        options: { radius: '80%' }
     });
-    transactionsPieChartLeft = new Chart(ctxLeft, {
-        type: 'pie',
-        data: {
-            labels: accountTransactionData.map(x => x.description),
-            datasets: [{
-                data: accountTransactionData.map(x => x.amount),
-            }]
-        },
-        options: {
-            radius: '80%'
+
+    if (side === 'left') {
+        transactionsPieChartLeft = chart;
+    } else {
+        transactionsPieChartRight = chart;
+    }
+}
+
+async function loadTransactionItems(accountId, periodIds) {
+    periodIds = [ 1, 2, 3];
+    console.log("Test1");
+
+    const parameters = new URLSearchParams();
+    periodIds.forEach(periodId => parameters.append('periodId', periodId));
+    parameters.append('accountId', 1);
+    var response = await fetch(`/TransactionItem/GetTransactionsForPeriod?${parameters.toString()}`);
+    if (!response.ok) {
+        console.error("Could not load transactions for account " + accountId + ". Status: " + response.status);
+        return;
+    }
+    console.log(response);
+    const items = await response.json();
+    //transactionItems = items;
+    console.log("asdsada", items);
+
+
+
+    let currentItem;
+
+    console.log(items);
+    for (i = 0; i < items.length; i++) {
+        console.log(items[i]);
+        currentItem = items[i];
+        if (!transactionItems.has(currentItem.periodId)) {
+            transactionItems.set(currentItem.periodId, []);
         }
-    });
+        transactionItems.get(currentItem.periodId).push(currentItem);
+    }
+    console.log("asasasdasdasdasdasd", transactionItems);
+
+
+
 }
 
 function displayData() {
