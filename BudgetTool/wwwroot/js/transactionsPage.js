@@ -12,9 +12,12 @@ let selectedPeriod = null;
 let transactionsPieChartLeft;
 let transactionsPieChartRight;
 
+const monthOrder = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
 window.onload = async function () {
     await loadTransactionItems(1);
     await loadTransactionHistory();
+    await loadComparisonSelections(1);
     loadTransactionsPieChart(1,2,1);
     displayData();
 }
@@ -143,7 +146,6 @@ async function loadTransactionHistory() {
 }
 
 function groupTransactionsByYear() {
-    const monthOrder = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     let monthArray = [];
     let currentMonth;
     const groupedByYear = accountTransactionHistory.reduce((monthsPerYear, item) => {
@@ -213,8 +215,10 @@ function groupByCategoryTotal(items) {
 
 function renderPieChart(canvasId, items, side) {
     const grouped = groupByCategoryTotal(items);
-    const labels = Object.keys(grouped);
-    const data = Object.values(grouped);
+    const sortedEntries = Object.entries(grouped).sort((a, b) => a[0].localeCompare(b[0]));
+    const labels = sortedEntries.map(entry => entry[0]);
+    const data = sortedEntries.map(entry => entry[1]);
+
     const ctx = document.getElementById(canvasId).getContext('2d');
 
     if (side === 'left' && transactionsPieChartLeft) {
@@ -271,9 +275,16 @@ async function loadTransactionItems(accountId, periodIds) {
         transactionItems.get(currentItem.periodId).push(currentItem);
     }
     console.log("asasasdasdasdasdasd", transactionItems);
+}
 
-
-
+async function loadComparisonSelections(accountId) {
+    var response = await fetch("/ComparisonSelection/GetComparisonItemsForAccount?accountId=" + accountId);
+    if (!response.ok) {
+        console.error("Could not load transactions for account " + accountId + ". Status: " + response.status);
+        return;
+    }
+    const comparisonSelections = await response.json();
+    console.log("Comparison Selections: ", comparisonSelections);
 }
 
 function displayData() {
