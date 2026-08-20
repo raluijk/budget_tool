@@ -8,21 +8,37 @@
     <div class="comparison-container comparison-left">
         <h1 class="graph-title" id="graph-title-left">TestLeft</h1>
         <div class="graph-container">
-            <img src="/Images/angle-left.png" alt="Left" class="arrow">
+            <div class="preview-arrow-container" id="leftChartPrevText">
+                <img src="/Images/angle-left.png" alt="Left">
+                <span class="period-label"></span>
+            </div>
+            <img src="/Images/angle-left.png" alt="Left" class="arrow" id="leftChartPrevSelect">
             <div class="transactions-pie-chart">
                 <canvas id="transactionsPieChartLeft"></canvas>
             </div>
-            <img src="/Images/angle-right.png" alt="Right" class="arrow">
+            <div class="preview-arrow-container" id="leftChartNextText">
+                <span class="period-label"></span>
+                <img src="/Images/angle-right.png" alt="Right">
+            </div>
+            <img src="/Images/angle-right.png" alt="Right" class="arrow" id="leftChartNextSelect">
         </div>
     </div>
     <div class="comparison-container comparison-right">
         <h1 class="graph-title" id="graph-title-right">TestRight</h1>
         <div class="graph-container">
-            <img src="/Images/angle-left.png" alt="Left" class="arrow">
+            <div class="preview-arrow-container" id="rightChartPrevText">
+                <img src="/Images/angle-left.png" alt="Left">
+                <span class="period-label"></span>
+            </div>
+            <img src="/Images/angle-left.png" alt="Left" class="arrow" id="rightChartPrevSelect">
             <div class="transactions-pie-chart">
                 <canvas id="transactionsPieChartRight"></canvas>
             </div>
-            <img src="/Images/angle-right.png" alt="Right" class="arrow">
+            <div class="preview-arrow-container" id="rightChartNextText">
+                <span class="period-label"></span>
+                <img src="/Images/angle-right.png" alt="Right">
+            </div>
+            <img src="/Images/angle-right.png" alt="Right" class="arrow" id="rightChartNextSelect">
         </div>
     </div>
 </div>

@@ -1,7 +1,10 @@
-﻿let accountTransactionHistory = [];
+﻿"use strict"
+let accountTransactionHistory = [];
 let monthsForSelectedYear = [];
 let monthsGroupedByYear = {};
 let transactionItems = new Map();
+let leftComparisonSelections = [];
+let rightComparisonSelections = [];
 
 let yearsAndMonthsToCompare = [];
 
@@ -17,8 +20,8 @@ const monthOrder = ["January", "February", "March", "April", "May", "June", "Jul
 window.onload = async function () {
     await loadTransactionItems(1);
     await loadTransactionHistory();
-    await loadComparisonSelections(1);
-    loadTransactionsPieChart(1,2,1);
+    await getComparisonSelections(1);
+    loadTransactionsPieChart(1, 2, 1);
     displayData();
 }
 
@@ -158,7 +161,7 @@ function groupTransactionsByYear() {
     }
     for (const year in groupedByYear) {
         monthArray = groupedByYear[year];
-        for (i = 0; i < monthArray.length; i++) {
+        for (let i = 0; i < monthArray.length; i++) {
             currentMonth = monthArray[i];
             monthArray[i] = monthOrder[currentMonth - 1];
         }
@@ -266,7 +269,7 @@ async function loadTransactionItems(accountId, periodIds) {
     let currentItem;
 
     console.log(items);
-    for (i = 0; i < items.length; i++) {
+    for (let i = 0; i < items.length; i++) {
         console.log(items[i]);
         currentItem = items[i];
         if (!transactionItems.has(currentItem.periodId)) {
@@ -277,7 +280,8 @@ async function loadTransactionItems(accountId, periodIds) {
     console.log("asasasdasdasdasdasd", transactionItems);
 }
 
-async function loadComparisonSelections(accountId) {
+async function getComparisonSelections(accountId) {
+    let selectionItem = {};
     var response = await fetch("/ComparisonSelection/GetComparisonItemsForAccount?accountId=" + accountId);
     if (!response.ok) {
         console.error("Could not load transactions for account " + accountId + ". Status: " + response.status);
@@ -285,6 +289,51 @@ async function loadComparisonSelections(accountId) {
     }
     const comparisonSelections = await response.json();
     console.log("Comparison Selections: ", comparisonSelections);
+    leftComparisonSelections = comparisonSelections.filter(item => item.selectionSide === 'left');
+    rightComparisonSelections = comparisonSelections.filter(item => item.selectionSide === 'right');
+    updatePreviewLabels("left", 0);
+    updatePreviewLabels("right", 0);
+}
+
+function updatePreviewLabels(comparisonSide, currentOrder) {
+    let previousItem, nextItem, currentItem;
+    const graphTitle = document.querySelector(`#graph-title-${comparisonSide}`);
+    const leftArrowContainer = document.querySelector(`#${comparisonSide}ChartPrevText`);
+    const rightArrowContainer = document.querySelector(`#${comparisonSide}ChartNextText`);
+    const leftArrowText = document.querySelector(`#${comparisonSide}ChartPrevText .period-label`);
+    const rightArrowText = document.querySelector(`#${comparisonSide}ChartNextText .period-label`);
+    const currentSelections = comparisonSide === "left" ? leftComparisonSelections : rightComparisonSelections;
+    if (currentSelections == null || currentSelections.length < 2) {
+        if (currentSelections == null) {
+            graphTitle.innerText = "";
+        } else {
+            currentItem = currentSelections[currentOrder];
+            graphTitle.innerText = monthOrder[currentItem.month - 1] + " " + currentItem.year;
+        }
+        leftArrowContainer.style.display = "none";
+        rightArrowContainer.style.display = "none";
+        return;
+    }
+    leftArrowContainer.style.display = "block";
+    rightArrowContainer.style.display = "block";
+    switch (currentOrder) {
+        case 0:
+            previousItem = currentSelections[currentSelections.length - 1];
+            nextItem = currentSelections[currentOrder + 1];
+            break;
+        case currentSelections.length - 1:
+            previousItem = currentSelections[currentOrder - 1];
+            nextItem = currentSelections[0];
+            break;
+        default:
+            previousItem = currentSelections[currentOrder - 1];
+            nextItem = currentSelections[currentOrder + 1];
+            break;
+    }
+    currentItem = currentSelections[currentOrder];
+    graphTitle.innerText = monthOrder[currentItem.month - 1] + " " + currentItem.year;
+    leftArrowText.innerText = monthOrder[previousItem.month - 1] + " " + previousItem.year;
+    rightArrowText.innerText = monthOrder[nextItem.month - 1] + " " + nextItem.year;
 }
 
 function displayData() {

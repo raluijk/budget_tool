@@ -9,6 +9,7 @@
     background-color: #2776BC;
     display: flex;
     flex-direction: column;
+    border-right: 2px solid black;
 }
 
 .header .navbar .container-fluid {

@@ -145,6 +145,32 @@ main {
     cursor: pointer;
 }
 
+#leftChartPrevText, #leftChartNextText, #rightChartPrevText, #rightChartNextText {
+    position: absolute;
+    top: 0;
+    cursor: default;
+}
+
+#leftChartPrevText, #rightChartPrevText {
+    left: 0;
+}
+
+#leftChartNextText, #rightChartNextText {
+    right: 0;
+}
+
+.preview-arrow-container {
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.preview-arrow-container img {
+    height: 0.9em;
+    width: 0.9em;
+}
+
 .graph-content {
     border: solid 2px grey;
     width: 80%;
