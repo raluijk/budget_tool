@@ -15,6 +15,14 @@ let selectedPeriod = null;
 let transactionsPieChartLeft;
 let transactionsPieChartRight;
 
+let leftChartPrevSelect = document.getElementById("leftChartPrevSelect");
+let leftChartNextSelect = document.getElementById("leftChartNextSelect");
+let rightChartPrevSelect = document.getElementById("rightChartPrevSelect");
+let rightChartNextSelect = document.getElementById("rightChartNextSelect");
+
+let currentLeftSelectionIndex = 0;
+let currentRightSelectionIndex = 0;
+
 const monthOrder = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 window.onload = async function () {
@@ -43,6 +51,47 @@ buttonOkay.addEventListener('click', () => {
     document.getElementById("yearAndMonthsMenuContainer").style.display = "none";
     yearsAndMonthsToCompare.push({ year: selectedYear, month: selectedMonth });
 });
+
+leftChartPrevSelect.addEventListener('click', () => {
+    cycleComparisonSelections("left", -1);
+});
+
+leftChartNextSelect.addEventListener('click', () => {
+    cycleComparisonSelections("left", 1);
+});
+
+rightChartPrevSelect.addEventListener('click', () => {
+    cycleComparisonSelections("right", -1);
+});
+
+rightChartNextSelect.addEventListener('click', () => {
+    cycleComparisonSelections("right", 1);
+});
+
+function cycleComparisonSelections(comparisonSide, direction) {
+    let accountId = 1;
+    if (comparisonSide === "left") {
+        currentLeftSelectionIndex += direction;
+        if (currentLeftSelectionIndex < 0) {
+            currentLeftSelectionIndex = leftComparisonSelections.length - 1;
+        } else if (currentLeftSelectionIndex >= leftComparisonSelections.length) {
+            currentLeftSelectionIndex = 0;
+        }
+        const itemsForPeriod = getItemsForPeriodAndAccount(leftComparisonSelections[currentLeftSelectionIndex].periodId, accountId);
+        renderPieChart('transactionsPieChartLeft', itemsForPeriod, 'left');
+        updatePreviewLabels("left", currentLeftSelectionIndex);
+    } else if (comparisonSide === "right") {
+        currentRightSelectionIndex += direction;
+        if (currentRightSelectionIndex < 0) {
+            currentRightSelectionIndex = rightComparisonSelections.length - 1;
+        } else if (currentRightSelectionIndex >= rightComparisonSelections.length) {
+            currentRightSelectionIndex = 0;
+        }
+        const itemsForPeriod = getItemsForPeriodAndAccount(rightComparisonSelections[currentRightSelectionIndex].periodId, accountId);
+        renderPieChart('transactionsPieChartRight', itemsForPeriod, 'right');
+        updatePreviewLabels("right", currentRightSelectionIndex);
+    }
+}
 
 yearSelector.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -300,6 +349,8 @@ function updatePreviewLabels(comparisonSide, currentOrder) {
     const graphTitle = document.querySelector(`#graph-title-${comparisonSide}`);
     const leftArrowContainer = document.querySelector(`#${comparisonSide}ChartPrevText`);
     const rightArrowContainer = document.querySelector(`#${comparisonSide}ChartNextText`);
+    const leftArrowSelectContainer = document.querySelector(`#${comparisonSide}ChartPrevSelect`);
+    const rightArrowSelectContainer = document.querySelector(`#${comparisonSide}ChartNextSelect`);
     const leftArrowText = document.querySelector(`#${comparisonSide}ChartPrevText .period-label`);
     const rightArrowText = document.querySelector(`#${comparisonSide}ChartNextText .period-label`);
     const currentSelections = comparisonSide === "left" ? leftComparisonSelections : rightComparisonSelections;
@@ -312,10 +363,14 @@ function updatePreviewLabels(comparisonSide, currentOrder) {
         }
         leftArrowContainer.style.display = "none";
         rightArrowContainer.style.display = "none";
+        leftArrowSelectContainer.style.display = "none";
+        rightArrowSelectContainer.style.display = "none";
         return;
     }
     leftArrowContainer.style.display = "block";
     rightArrowContainer.style.display = "block";
+    leftArrowSelectContainer.style.display = "block";
+    rightArrowSelectContainer.style.display = "block";
     switch (currentOrder) {
         case 0:
             previousItem = currentSelections[currentSelections.length - 1];
