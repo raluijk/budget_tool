@@ -24,25 +24,29 @@ namespace BudgetTool.Controllers
         public async Task<IActionResult> GetTransactionsForPeriod([FromQuery] int[] periodId)
         {
             await using var connection = new NpgsqlConnection(ConnectionString);
+            string sql = $@"
+                SELECT
+                    ti.transaction_item_id,
+                    ti.account_id,
+                    tp.transaction_period_id,
+                    ti.transaction_category_id,
+                    ti.transaction_amount,
+                    tc.category_label
+                FROM transaction_period tp
+                INNER JOIN transaction_item ti ON tp.transaction_period_id = ti.transaction_period_id
+                INNER JOIN transaction_category tc ON ti.transaction_category_id = tc.transaction_category_id
+                WHERE";
+            if (periodId.Length > 0)
+            {
+                sql += @"
+                tp.transaction_period_id = ANY(@periodIds) AND";
+            }
+            sql += @"
+                tp.account_id = @accountId;";
             try
             {
                 await connection.OpenAsync();
-                await using var command = new NpgsqlCommand(
-                    """
-                    SELECT
-                        ti.transaction_item_id,
-                        ti.account_id,
-                        tp.transaction_period_id,
-                        ti.transaction_category_id,
-                        ti.transaction_amount,
-                        tc.category_label
-                    FROM transaction_period tp
-                    INNER JOIN transaction_item ti ON tp.transaction_period_id = ti.transaction_period_id
-                    INNER JOIN transaction_category tc ON ti.transaction_category_id = tc.transaction_category_id
-                    WHERE tp.transaction_period_id = ANY(@periodIds)
-                    AND tp.account_id = @accountId;
-                    """,
-                    connection);
+                await using var command = new NpgsqlCommand(sql, connection);
                 command.Parameters.AddWithValue("@periodIds", periodId);
                 command.Parameters.AddWithValue("@accountId", 1);
                 await using var reader = await command.ExecuteReaderAsync();

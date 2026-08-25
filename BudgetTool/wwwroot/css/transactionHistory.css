@@ -77,7 +77,7 @@
 
 .button {
     background-color: #2776BC;
-    border: 2px solid grey;
+    border: 2px solid black;
     width: 25%;
     margin-right: 0.8em;
     border-radius: 4px;
@@ -125,6 +125,7 @@ main {
     border-radius: 15px;
     margin: 2em;
     background-color: white;
+    position: relative;
 }
 
 .graph-container {
@@ -202,4 +203,29 @@ main {
     background-color: #2776BC;
     padding-top: 0.4em;
     color: white;
+}
+
+.add-comparison {
+    display: flex;
+    width: 12%;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    right: 5%;
+}
+
+.add-comparison img {
+    width: 1em;
+    height: 1em;
+    margin: auto;
+}
+
+.add-comparison span {
+    display: flex;
+    align-items: center;
+    margin: auto;
+}
+
+#yearAndMonthsMenuContainer {
+    display: none;
 }

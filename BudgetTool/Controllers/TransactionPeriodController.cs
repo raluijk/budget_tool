@@ -50,5 +50,34 @@ namespace BudgetTool.Controllers
                 return Json(e.Message);
             }
         }
+
+        public async Task<IActionResult> GetTransactionPeriodID(int month, int year, int accountId)
+        {
+            int transactionPeriodId = 0;
+            await using var connection = new NpgsqlConnection(ConnectionString);
+            try
+            {
+                await connection.OpenAsync();
+                await using var command = new NpgsqlCommand("SELECT transaction_period_id FROM transaction_period WHERE month = @month AND year = @year AND account_id = @account_id;", connection);
+                command.Parameters.AddWithValue("month", month);
+                command.Parameters.AddWithValue("year", year);
+                command.Parameters.AddWithValue("account_id", accountId);
+                var result = await command.ExecuteScalarAsync();
+                if (result != null && result != DBNull.Value)
+                {
+                    transactionPeriodId = Convert.ToInt32(result);
+                } else
+                {
+                    return NotFound($"No transaction period found for month {month}, year {year}, and account ID {accountId}.");
+                }
+                return Ok(transactionPeriodId);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Connection failed.");
+                Console.WriteLine(e.Message);
+                return Json(e.Message);
+            }
+        }
     }
 }
