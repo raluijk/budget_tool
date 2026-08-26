@@ -1,4 +1,10 @@
 ﻿"use strict"
+
+/*TODO:
+1. When Okay for selection is clicked, add it to db
+2. When remove is clicked, delete from db
+*/
+
 let accountTransactionHistory = [];
 let monthsForSelectedYear = [];
 let monthsGroupedByYear = {};
@@ -32,7 +38,6 @@ window.onload = async function () {
     await loadTransactionHistory();
     await getComparisonSelections(1);
     loadTransactionsPieChart(1, 2, accountId);
-    displayData();
 }
 
 const yearSelector = document.getElementById("yearSelector");
@@ -46,6 +51,8 @@ const buttonCancel = document.getElementById("buttonCancel");
 const buttonOkay = document.getElementById("buttonOkay");
 const buttonAddComparisonLeft = document.getElementById("btnAddComparisonLeft");
 const buttonAddComparisonRight = document.getElementById("btnAddComparisonRight");
+const buttonRemoveComparisonLeft = document.getElementById("btnRemoveComparisonLeft");
+const buttonRemoveComparisonRight = document.getElementById("btnRemoveComparisonRight");
 
 buttonCancel.addEventListener('click', () => {
     document.getElementById("yearAndMonthsMenuContainer").style.display = "none";
@@ -62,8 +69,17 @@ buttonAddComparisonRight.addEventListener('click', () => {
     addButtonSideClicked = "right";
 });
 
+buttonRemoveComparisonLeft.addEventListener('click', () => { removeComparison("left") });
+buttonRemoveComparisonRight.addEventListener('click', () => { removeComparison("right") });
+
 buttonOkay.addEventListener('click', async () => {
     document.getElementById("yearAndMonthsMenuContainer").style.display = "none";
+    if (buttonRemoveComparisonLeft.style.display == "none") {
+        buttonRemoveComparisonLeft.style.display = "flex";
+    }
+    if (buttonRemoveComparisonRight.style.display == "none") {
+        buttonRemoveComparisonRight.style.display = "flex";
+    }
     let numericMonth = monthOrder.indexOf(selectedMonth) + 1;
     var response = await fetch(`/TransactionPeriod/GetTransactionPeriodID?month=${numericMonth}&year=${selectedYear}&accountId=${accountId}`);
     if (!response.ok) {
@@ -71,10 +87,13 @@ buttonOkay.addEventListener('click', async () => {
         return;
     }
     selectedPeriod = await response.json();
-    console.log("Selected Period: ", selectedPeriod);
     loadTransactionItems(1, [selectedPeriod]);
-    // TODO: Add logic to check if the selected period already exists in the comparison selections before adding it.
     if (addButtonSideClicked === "left") {
+        if (leftComparisonSelections.some(cs => cs.periodId == selectedPeriod)) {
+            const foundIndex =  leftComparisonSelections.findIndex(cs => cs.periodId == selectedPeriod);
+            cycleComparisonSelections("left", foundIndex - currentLeftSelectionIndex);
+            return;
+        }
         for (let i = currentLeftSelectionIndex + 1; i < leftComparisonSelections.length; i++) {
             leftComparisonSelections[i].selectionOrder += 1;
         }
@@ -88,6 +107,11 @@ buttonOkay.addEventListener('click', async () => {
         });
         cycleComparisonSelections("left", 1);
     } else if (addButtonSideClicked === "right") {
+        if (rightComparisonSelections.some(cs => cs.periodId == selectedPeriod)) {
+            const foundIndex = rightComparisonSelections.findIndex(cs => cs.periodId == selectedPeriod);
+            cycleComparisonSelections("right", foundIndex - currentRightSelectionIndex);
+            return;
+        }
         for (let i = currentRightSelectionIndex + 1; i < rightComparisonSelections.length; i++) {
             rightComparisonSelections[i].selectionOrder += 1;
         }
@@ -101,8 +125,6 @@ buttonOkay.addEventListener('click', async () => {
         });
         cycleComparisonSelections("right", 1);
     }
-    console.log("Left Comparison Selections: ", leftComparisonSelections);
-    console.log("Right Comparison Selections: ", rightComparisonSelections);
     addButtonSideClicked = "";
 });
 
@@ -122,10 +144,26 @@ rightChartNextSelect.addEventListener('click', () => {
     cycleComparisonSelections("right", 1);
 });
 
+function removeComparison(side) {
+    if (side === "left") {
+        leftComparisonSelections.splice(currentLeftSelectionIndex, 1);
+    }
+    if (side === "right") {
+        rightComparisonSelections.splice(currentRightSelectionIndex, 1);
+    }
+    cycleComparisonSelections(side, -1);
+}
+
 function cycleComparisonSelections(comparisonSide, direction) {
     let accountId = 1;
     let itemsForPeriod;
     if (comparisonSide === "left") {
+        if (leftComparisonSelections.length == 0) {
+            transactionsPieChartLeft.destroy();
+            document.getElementById("graph-title-left").innerText = "Please add a transaction period";
+            buttonRemoveComparisonLeft.style.display = "none";
+            return;
+        }
         currentLeftSelectionIndex += direction;
         if (currentLeftSelectionIndex < 0) {
             currentLeftSelectionIndex = leftComparisonSelections.length - 1;
@@ -136,6 +174,12 @@ function cycleComparisonSelections(comparisonSide, direction) {
         renderPieChart('transactionsPieChartLeft', itemsForPeriod, 'left');
         updatePreviewLabels("left", currentLeftSelectionIndex);
     } else if (comparisonSide === "right") {
+        if (rightComparisonSelections.length == 0) {
+            transactionsPieChartRight.destroy();
+            document.getElementById("graph-title-right").innerText = "Please add a transaction period";
+            buttonRemoveComparisonRight.style.display = "none";
+            return;
+        }
         currentRightSelectionIndex += direction;
         if (currentRightSelectionIndex < 0) {
             currentRightSelectionIndex = rightComparisonSelections.length - 1;
@@ -146,7 +190,6 @@ function cycleComparisonSelections(comparisonSide, direction) {
         renderPieChart('transactionsPieChartRight', itemsForPeriod, 'right');
         updatePreviewLabels("right", currentRightSelectionIndex);
     }
-    console.log("Items for period: ", itemsForPeriod);
 }
 
 yearSelector.addEventListener("click", (event) => {
@@ -290,7 +333,6 @@ function generateYearSelectionMenu() {
 function generateMonthSelectionMenu() {
     monthSelector.innerHTML = "";
     let months = "";
-    console.log("Months for selected year: ", monthsForSelectedYear);
     for (const month of monthsForSelectedYear) {
         const monthOption = document.createElement("div");
         monthOption.classList.add("month-option");
@@ -311,7 +353,6 @@ function loadTransactionsPieChart(periodId1, periodId2, accountId) {
 
 function getItemsForPeriodAndAccount(periodId, accountId) {
     const items = transactionItems.get(periodId) || [];
-    console.log("periodId: ", periodId, " accountId: ", accountId, " items: ", items, "transactionItems", transactionItems);
     return items.filter(item => item.accountId === accountId);
 }
 
@@ -354,8 +395,6 @@ function renderPieChart(canvasId, items, side) {
 }
 
 async function loadTransactionItems(accountId, periodIds = null) {
-    console.log("Test1");
-
     const parameters = new URLSearchParams();
     if (periodIds) {
         periodIds.forEach(periodId => parameters.append('periodId', periodId));
@@ -366,25 +405,15 @@ async function loadTransactionItems(accountId, periodIds = null) {
         console.error("Could not load transactions for account " + accountId + ". Status: " + response.status);
         return;
     }
-    console.log(response);
     const items = await response.json();
-    //transactionItems = items;
-    console.log("asdsada", items);
-
-
-
     let currentItem;
-
-    console.log(items);
     for (let i = 0; i < items.length; i++) {
-        console.log(items[i]);
         currentItem = items[i];
         if (!transactionItems.has(currentItem.periodId)) {
             transactionItems.set(currentItem.periodId, []);
         }
         transactionItems.get(currentItem.periodId).push(currentItem);
     }
-    console.log("asasasdasdasdasdasd", transactionItems);
 }
 
 async function getComparisonSelections(accountId) {
@@ -395,7 +424,6 @@ async function getComparisonSelections(accountId) {
         return;
     }
     const comparisonSelections = await response.json();
-    console.log("Comparison Selections: ", comparisonSelections);
     leftComparisonSelections = comparisonSelections.filter(item => item.selectionSide === 'left');
     rightComparisonSelections = comparisonSelections.filter(item => item.selectionSide === 'right');
     updatePreviewLabels("left", 0);
@@ -447,9 +475,4 @@ function updatePreviewLabels(comparisonSide, currentOrder) {
     graphTitle.innerText = monthOrder[currentItem.month - 1] + " " + currentItem.year;
     leftArrowText.innerText = monthOrder[previousItem.month - 1] + " " + previousItem.year;
     rightArrowText.innerText = monthOrder[nextItem.month - 1] + " " + nextItem.year;
-}
-
-function displayData() {
-    console.log(accountTransactionHistory);
-    console.log(groupTransactionsByYear());
 }
