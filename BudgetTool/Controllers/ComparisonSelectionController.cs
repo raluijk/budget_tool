@@ -42,7 +42,8 @@ namespace BudgetTool.Controllers
                       tp.month
                     FROM comparison_selection cs
                     INNER JOIN transaction_period tp ON cs.transaction_period_id = tp.transaction_period_id
-                    WHERE cs.account_id = @accountId;
+                    WHERE cs.account_id = @accountId
+                    ORDER BY cs.selection_side, cs.selection_order;
                     """,
                     connection);
                 command.Parameters.AddWithValue("@accountId", accountID);
@@ -67,6 +68,61 @@ namespace BudgetTool.Controllers
                 Console.WriteLine("Connection failed.");
                 Console.WriteLine(e.Message);
                 return Json(e.Message);
+            }
+        }
+
+        public async Task<IActionResult> UpdateComparisonSelections([FromBody] ComparisonSelection comparisonSelection)
+        {
+            await using var connection = new NpgsqlConnection(ConnectionString);
+            try
+            {
+                await connection.OpenAsync();
+                await using var transaction = await connection.BeginTransactionAsync();
+
+                try
+                {
+                    await using var updateCommand = new NpgsqlCommand(
+                    """
+                        UPDATE comparison_selection
+                        SET selection_order = selection_order + 1
+                        WHERE account_id = @accountID
+                          AND selection_side = @side
+                          AND selection_order >= @selectionOrder;
+                        """,
+                    connection, transaction);
+                    updateCommand.Parameters.AddWithValue("@accountID", comparisonSelection.AccountId);
+                    updateCommand.Parameters.AddWithValue("@side", comparisonSelection.SelectionSide);
+                    updateCommand.Parameters.AddWithValue("@selectionOrder", comparisonSelection.SelectionOrder);
+                    await updateCommand.ExecuteNonQueryAsync();
+
+                    await using var insertCommand = new NpgsqlCommand(
+                    """
+                        INSERT INTO comparison_selection (account_id, transaction_period_id, selection_side, selection_order)
+                        VALUES (@accountId, @periodId, @side, @selectionOrder);
+                    """,
+                    connection, transaction);
+                    insertCommand.Parameters.AddWithValue("@accountId", comparisonSelection.AccountId);
+                    insertCommand.Parameters.AddWithValue("@periodId", comparisonSelection.PeriodId);
+                    insertCommand.Parameters.AddWithValue("@side", comparisonSelection.SelectionSide);
+                    insertCommand.Parameters.AddWithValue("@selectionOrder", comparisonSelection.SelectionOrder);
+                    await insertCommand.ExecuteNonQueryAsync();
+
+                    await transaction.CommitAsync();
+                    return Ok(new { success = true });
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Update failed.");
+                    Console.WriteLine(e.Message);
+                    await transaction.RollbackAsync();
+                    return StatusCode(500, "Failed to update comparison selections." + e.Message);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Connection failed.");
+                Console.WriteLine(e.Message);
+                return StatusCode(500, e.Message);
             }
         }
     }

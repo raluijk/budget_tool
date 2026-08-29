@@ -37,7 +37,7 @@ window.onload = async function () {
     await loadTransactionItems(1);
     await loadTransactionHistory();
     await getComparisonSelections(1);
-    loadTransactionsPieChart(1, 2, accountId);
+    loadTransactionsPieChart(leftComparisonSelections[0].periodId, rightComparisonSelections[0].periodId, accountId);
 }
 
 const yearSelector = document.getElementById("yearSelector");
@@ -73,6 +73,7 @@ buttonRemoveComparisonLeft.addEventListener('click', () => { removeComparison("l
 buttonRemoveComparisonRight.addEventListener('click', () => { removeComparison("right") });
 
 buttonOkay.addEventListener('click', async () => {
+    let selectionToAdd = {};
     document.getElementById("yearAndMonthsMenuContainer").style.display = "none";
     if (buttonRemoveComparisonLeft.style.display == "none") {
         buttonRemoveComparisonLeft.style.display = "flex";
@@ -87,24 +88,27 @@ buttonOkay.addEventListener('click', async () => {
         return;
     }
     selectedPeriod = await response.json();
+    selectionToAdd = {
+        accountId: accountId,
+        periodId: selectedPeriod,
+        month: parseInt(numericMonth),
+        year: selectedYear,
+        selectionSide: "left",
+        selectionOrder: currentLeftSelectionIndex + 1
+    };
     loadTransactionItems(1, [selectedPeriod]);
     if (addButtonSideClicked === "left") {
         if (leftComparisonSelections.some(cs => cs.periodId == selectedPeriod)) {
-            const foundIndex =  leftComparisonSelections.findIndex(cs => cs.periodId == selectedPeriod);
+            const foundIndex = leftComparisonSelections.findIndex(cs => cs.periodId == selectedPeriod);
             cycleComparisonSelections("left", foundIndex - currentLeftSelectionIndex);
             return;
         }
+        selectionToAdd.selectionSide = "left";
+        updateComparisonSelections(selectionToAdd);
         for (let i = currentLeftSelectionIndex + 1; i < leftComparisonSelections.length; i++) {
             leftComparisonSelections[i].selectionOrder += 1;
         }
-        leftComparisonSelections.splice(currentLeftSelectionIndex + 1, 0, {
-            accountId: accountId,
-            periodId: selectedPeriod,
-            month: parseInt(numericMonth),
-            year: selectedYear,
-            selectionSide: "left",
-            selectionOrder: currentLeftSelectionIndex + 1
-        });
+        leftComparisonSelections.splice(currentLeftSelectionIndex + 1, 0, selectionToAdd);
         cycleComparisonSelections("left", 1);
     } else if (addButtonSideClicked === "right") {
         if (rightComparisonSelections.some(cs => cs.periodId == selectedPeriod)) {
@@ -112,21 +116,38 @@ buttonOkay.addEventListener('click', async () => {
             cycleComparisonSelections("right", foundIndex - currentRightSelectionIndex);
             return;
         }
+        selectionToAdd.selectionSide = "right";
+        updateComparisonSelections(selectionToAdd);
         for (let i = currentRightSelectionIndex + 1; i < rightComparisonSelections.length; i++) {
             rightComparisonSelections[i].selectionOrder += 1;
         }
-        rightComparisonSelections.splice(currentRightSelectionIndex + 1, 0, {
-            accountId: accountId,
-            periodId: selectedPeriod,
-            month: parseInt(numericMonth),
-            year: selectedYear,
-            selectionSide: "right",
-            selectionOrder: currentRightSelectionIndex + 1
-        });
+        rightComparisonSelections.splice(currentRightSelectionIndex + 1, 0, selectionToAdd);
         cycleComparisonSelections("right", 1);
     }
     addButtonSideClicked = "";
 });
+
+async function updateComparisonSelections(selectionToAdd) {
+    try {
+        const response = await fetch('/ComparisonSelection/UpdateComparisonSelections', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(selectionToAdd)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Success:', data.message);
+    } catch (error) {
+        console.error('Error sending data:', error);
+    }
+}
 
 leftChartPrevSelect.addEventListener('click', () => {
     cycleComparisonSelections("left", -1);
@@ -418,14 +439,20 @@ async function loadTransactionItems(accountId, periodIds = null) {
 
 async function getComparisonSelections(accountId) {
     let selectionItem = {};
-    var response = await fetch("/ComparisonSelection/GetComparisonItemsForAccount?accountId=" + accountId);
+    try {
+        var response = await fetch("/ComparisonSelection/GetComparisonItemsForAccount?accountId=" + accountId);
+    }  catch (error) {
+       console.error("Error fetching comparison selections: ", error);
+       return;
+    }
     if (!response.ok) {
         console.error("Could not load transactions for account " + accountId + ". Status: " + response.status);
         return;
     }
     const comparisonSelections = await response.json();
-    leftComparisonSelections = comparisonSelections.filter(item => item.selectionSide === 'left');
-    rightComparisonSelections = comparisonSelections.filter(item => item.selectionSide === 'right');
+    console.log("Comparison Selections: ", comparisonSelections);
+    leftComparisonSelections = comparisonSelections.filter(item => item.selectionSide === 'left').sort((a, b) => a.selectionOrder - b.selectionOrder);
+    rightComparisonSelections = comparisonSelections.filter(item => item.selectionSide === 'right').sort((a, b) => a.selectionOrder - b.selectionOrder);
     updatePreviewLabels("left", 0);
     updatePreviewLabels("right", 0);
 }
