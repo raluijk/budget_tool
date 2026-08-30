@@ -34,7 +34,7 @@ namespace BudgetTool.Controllers
                         bi.budget_item_id,
                         bi.budget_item_description,
                         bi.category_id,
-                        bi.budget_item_type,
+                        bi.budget_item_type,git 
                         bi.budget_item_amount,
                         bi.account_id,
                         bi.last_modified_datetime,
