@@ -1,19 +1,23 @@
 ﻿let accountBudgetData;
 let budgetPieChart;
+let accountId = 1;
 
 window.onload = async function () {
-    await loadBudgetForAccount(1);
+    showSpinner();
+    await loadBudgetForAccount(accountId);
     loadBudgetTable();
     loadBudgetPieChart();
+    hideSpinner();
 }
 
 async function loadBudgetForAccount(accountId) {
-    var response = await fetch('/Budget/GetBudgetForAccount?accountId=' + accountId);
+    var response = await fetch('/Budget/GetBudgetItems?accountId=' + accountId);
     if (!response.ok) {
         console.error("Could not load budget for account " + accountId + ". Status: " + response.status);
         return;
     }
     accountBudgetData = await response.json();
+    console.log("budget", accountBudgetData);
 }
 
 function loadBudgetTable() {
@@ -24,67 +28,84 @@ function loadBudgetTable() {
         }
     }
     let tableBody = document.querySelector('table');
+    console.log("tableBody", tableBody);
     let headerRow = tableBody.insertRow(0);
     headerRow.insertCell(0).outerHTML = '<th scope="col">Description</th>';
     headerRow.insertCell(1).outerHTML = '<th scope="col">Type</th>';
     headerRow.insertCell(2).outerHTML = '<th scope="col">Income/Expense</th>';
     headerRow.insertCell(3).outerHTML = '<th scope="col">Amount</th>';
+    headerRow.insertCell(4).outerHTML = '<th scope="col" style="display:none"></th>';
     for (let i = 0; i < accountBudgetData.length; i++) {
         let currRow = tableBody.insertRow(i + 1);
         let item = accountBudgetData[i];
-        currRow.insertCell(0).outerHTML = '<td>' + item.description + '</td>';
-        currRow.insertCell(1).outerHTML = '<td>' + item.category + '</td>';
-        currRow.insertCell(2).outerHTML = '<td></td>';
-        currRow.insertCell(3).outerHTML = '<td>' + item.amount + '</td>';
+        console.log("item", item);
+        currRow.insertCell(0).outerHTML = '<td>' + item.budgetItemDescription + '</td>';
+        currRow.insertCell(1).outerHTML = '<td>' + item.categoryLabel + '</td>';
+        currRow.insertCell(2).outerHTML = '<td>' + item.budgetItemType + '</td>';
+        currRow.insertCell(3).outerHTML = '<td>' + item.budgetItemAmount + '</td>';
+        currRow.insertCell(4).outerHTML = '<td style="display:none">' + item.budgetItemId + '</td>';
     }
 }
 
 async function updateBudgetForAccount() {
     let tableBody = document.querySelector('table');
     let rows = tableBody.rows;
-    if (accountBudgetData.length > 0) {
-        const deleteResponse = await fetch('/Budget/DeleteBudgetForAccount?accountId=' + 1, {
-            method: 'POST'
-        });
 
-        if (!deleteResponse.ok) {
-            console.error('Failed to delete budget items:', deleteResponse.statusText);
-            return;
-        }
-    }
-
-    accountBudgetData = [];
+    let updatedAccountBudgetData = [];
 
     for (var i = 1; i < rows.length; i++) {
         let row = rows[i];
         let description = getCellValue(row.cells[0]);
         let category = getCellValue(row.cells[1]);
         let amount = parseFloat(getCellValue(row.cells[3]));
+        let id = parseInt(getCellValue(row.cells[4]));
 
-        if (description && category) {
-            accountBudgetData.push({
-                accountId: 1,
+        let currentBudgetItem = accountBudgetData.find(item => item.budgetItemId == id);
+
+        /* The description and category must be valid at least, and one of the values must have been changed */
+        if ((description && category) &&
+            (description != currentBudgetItem.budgetItemDescription ||
+                category != currentBudgetItem.categoryId ||
+                  amount != currentBudgetItem.budgetItemAmount)) {
+            updatedAccountBudgetData.push({
+                budgetItemId: id,
+                accountId: accountId,
                 description: description,
                 category: category,
                 amount: amount
             });
+        } /* Now we have an array of budget items where one of the fields were changed */
+    }
+
+    if (updatedAccountBudgetData.length === 0) {
+        return true; // nothing changed, nothing to save
+    }
+
+    try {
+        const response = await fetch('/Budget/UpdateBudgetItems', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedAccountBudgetData)
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+    } catch (error) {
+        console.error('Error sending data:', error);
+        return false;
+    }
+
+    /* Now we need to merge the updated and current budget items together */
+    for (const updatedItem in updatedAccountBudgetData) {
+        const index = accountBudgetData.findIndex(item => item.budgetItemId === updatedItem.budgetItemId);
+        if (index !== 0) {
+            accountBudgetData[index] = { ...accountBudgetData[index], ...updatedItem };
         }
     }
-
-    const saveResponse = await fetch('/Budget/SaveBudgetForAccount', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(accountBudgetData)
-    });
-
-    if (!saveResponse.ok) {
-        console.error("Could not save budget for account. Status: " + saveResponse.status);
-        return;
-    }
-
-    var result = await saveResponse.json();
 
     budgetPieChart.data.labels = accountBudgetData.map(x => x.description);
     budgetPieChart.data.datasets[0].data = accountBudgetData.map(x => x.amount);
@@ -101,9 +122,9 @@ function loadBudgetPieChart() {
     budgetPieChart = new Chart(ctx, {
         type: 'pie',
         data: {
-            labels: accountBudgetData.map(x => x.description),
+            labels: accountBudgetData.map(x => x.categoryLabel),
             datasets: [{
-                data: accountBudgetData.map(x => x.amount),
+                data: accountBudgetData.map(x => x.budgetItemAmount),
             }]
         },
         options: {

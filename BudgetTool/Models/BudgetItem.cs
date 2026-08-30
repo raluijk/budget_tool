@@ -2,10 +2,13 @@
 {
     public class BudgetItem
     {
-        public int Id { get; set; }
-        public decimal AccountId { get; set; }
-        public required string Description { get; set; }
-        public string? Category { get; set; }
-        public decimal Amount { get; set; }
+        public int BudgetItemId { get; set; }
+        public string? BudgetItemDescription { get; set; }
+        public required int CategoryId { get; set; }
+        public required string BudgetItemType { get; set; }
+        public required decimal BudgetItemAmount { get; set; }
+        public required int AccountId { get; set; }
+        public DateTime? LastModifiedDateTime { get; set; }
+        public required string CategoryLabel { get; set; }
     }
 }

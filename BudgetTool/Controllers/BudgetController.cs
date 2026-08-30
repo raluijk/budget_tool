@@ -1,57 +1,86 @@
 using BudgetTool.Data;
 using BudgetTool.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Client;
+using Npgsql;
 using System.Diagnostics;
 
 namespace BudgetTool.Controllers
 {
     public class BudgetController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private string? ConnectionString { get; set; }
 
-        public BudgetController(ApplicationDbContext context)
+        public BudgetController(IConfiguration configuration)
         {
-            _context = context;
+            ConnectionString = configuration.GetConnectionString("NeonConnection");
         }
 
         public IActionResult Budget()
         {
-            var product = _context.BudgetItems.ToList();
-            return View(product);
+            return View();
         }
 
         [HttpGet]
-        public IActionResult GetBudgetForAccount(decimal accountId)
+        public async Task<IActionResult> GetBudgetItems(decimal accountId)
         {
-            var items = _context.BudgetItems
-                .Where(x => x.AccountId == accountId)
-                .Select(x => new { x.AccountId, x.Description, x.Category, x.Amount })
-                .ToList();
-
-            return Json(items);
+            await using var connection = new NpgsqlConnection(ConnectionString);
+            try
+            {
+                await connection.OpenAsync();
+                await using var command = new NpgsqlCommand(
+                    """
+                    SELECT
+                        bi.budget_item_id,
+                        bi.budget_item_description,
+                        bi.category_id,
+                        bi.budget_item_type,
+                        bi.budget_item_amount,
+                        bi.account_id,
+                        bi.last_modified_datetime,
+                        tc.category_label
+                    FROM budget_item bi
+                    INNER JOIN transaction_category tc ON bi.category_id = tc.transaction_category_id
+                    WHERE bi.account_id = 1;
+                    """,
+                    connection);
+                command.Parameters.AddWithValue("@accountId", accountId);
+                await using var reader = await command.ExecuteReaderAsync();
+                var budgetItems = new List<BudgetItem>();
+                while (await reader.ReadAsync())
+                {
+                    budgetItems.Add(new BudgetItem
+                    {
+                        BudgetItemId = reader.GetInt16(0),
+                        BudgetItemDescription = reader.GetString(1),
+                        CategoryId = reader.GetInt16(2),
+                        BudgetItemType = reader.GetString(3),
+                        BudgetItemAmount = reader.GetInt16(4),
+                        AccountId = reader.GetInt16(5),
+                        LastModifiedDateTime = reader.GetDateTime(6),
+                        CategoryLabel = reader.GetString(7),
+                    });
+                }
+                return Json(budgetItems);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Connection failed.");
+                Console.WriteLine(e.Message);
+                return Json(e.Message);
+            }
         }
 
         [HttpPost]
-        public async Task<IActionResult> DeleteBudgetForAccount([FromQuery] decimal accountId)
+        public async Task<IActionResult> UpdateBudgetItems([FromQuery] decimal accountId)
         {
-            var items = _context.BudgetItems
-                .Where(x => x.AccountId == accountId)
-                .ToList();
-
-            if (!items.Any())
-                return NotFound();
-
-            _context.BudgetItems.RemoveRange(items);
-            await _context.SaveChangesAsync();
-            return Json(items);
+            return Json("");
         }
 
         [HttpPost]
-        public async Task<IActionResult> SaveBudgetForAccount([FromBody] List<BudgetItem> budgetItems)
+        public async Task<IActionResult> AddBudgetItems([FromBody] BudgetItem budgetItems)
         {
-            await _context.BudgetItems.AddRangeAsync(budgetItems);
-            await _context.SaveChangesAsync();
-            return Ok(budgetItems);
+            return Json("");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

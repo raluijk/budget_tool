@@ -34,10 +34,23 @@ let currentRightSelectionIndex = 0;
 const monthOrder = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 window.onload = async function () {
+    showSpinner();
+    const graphs = document.querySelectorAll(".comparison-container");
     await loadTransactionItems(1);
     await loadTransactionHistory();
     await getComparisonSelections(1);
-    loadTransactionsPieChart(leftComparisonSelections[0].periodId, rightComparisonSelections[0].periodId, accountId);
+    let leftPeriodId, rightPeriodId;
+    if (leftComparisonSelections.length > 0) {
+        leftPeriodId = leftComparisonSelections[0].periodId;
+    }
+    if (rightComparisonSelections.length > 0) {
+        rightPeriodId = rightComparisonSelections[0].periodId;
+    }
+    loadTransactionsPieChart(leftPeriodId, rightPeriodId, accountId);
+    hideSpinner();
+    graphs.forEach(graph => {
+        graph.style.display = "block";
+    });
 }
 
 const yearSelector = document.getElementById("yearSelector");
@@ -74,6 +87,7 @@ buttonRemoveComparisonRight.addEventListener('click', () => { removeComparison("
 
 buttonOkay.addEventListener('click', async () => {
     let selectionToAdd = {};
+    let updateResult;
     document.getElementById("yearAndMonthsMenuContainer").style.display = "none";
     if (buttonRemoveComparisonLeft.style.display == "none") {
         buttonRemoveComparisonLeft.style.display = "flex";
@@ -104,7 +118,11 @@ buttonOkay.addEventListener('click', async () => {
             return;
         }
         selectionToAdd.selectionSide = "left";
-        updateComparisonSelections(selectionToAdd);
+        console.log("left selectionToAdd", selectionToAdd);
+        updateResult = updateComparisonSelections(selectionToAdd);
+        if (!updateResult) {
+            return;
+        }
         for (let i = currentLeftSelectionIndex + 1; i < leftComparisonSelections.length; i++) {
             leftComparisonSelections[i].selectionOrder += 1;
         }
@@ -117,7 +135,11 @@ buttonOkay.addEventListener('click', async () => {
             return;
         }
         selectionToAdd.selectionSide = "right";
-        updateComparisonSelections(selectionToAdd);
+        console.log("right selectionToAdd", selectionToAdd);
+        updateResult = updateComparisonSelections(selectionToAdd);
+        if (!updateResult) {
+            return true;
+        }
         for (let i = currentRightSelectionIndex + 1; i < rightComparisonSelections.length; i++) {
             rightComparisonSelections[i].selectionOrder += 1;
         }
@@ -128,6 +150,7 @@ buttonOkay.addEventListener('click', async () => {
 });
 
 async function updateComparisonSelections(selectionToAdd) {
+    console.log("selectionToAdd", selectionToAdd);
     try {
         const response = await fetch('/ComparisonSelection/UpdateComparisonSelections', {
             method: 'POST',
@@ -136,6 +159,32 @@ async function updateComparisonSelections(selectionToAdd) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(selectionToAdd)
+        });
+        console.log("response", response);
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Success:', data.message);
+        selectionToAdd.comparisonSelectionId = data.comparisonSelectionId;
+        console.log("selectionToAdd 2", selectionToAdd);
+        return true;
+    } catch (error) {
+        console.error('Error sending data:', error);
+        return false;
+    }
+}
+
+async function deleteComparisonSelection(selectionToDelete) {
+    try {
+        const response = await fetch('/ComparisonSelection/DeleteComparisonSelection', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(selectionToDelete)
         });
 
         if (!response.ok) {
@@ -167,9 +216,12 @@ rightChartNextSelect.addEventListener('click', () => {
 
 function removeComparison(side) {
     if (side === "left") {
+        console.log("item to remove", leftComparisonSelections[currentLeftSelectionIndex]);
+        deleteComparisonSelection(leftComparisonSelections[currentLeftSelectionIndex]);
         leftComparisonSelections.splice(currentLeftSelectionIndex, 1);
     }
     if (side === "right") {
+        deleteComparisonSelection(rightComparisonSelections[currentRightSelectionIndex]);
         rightComparisonSelections.splice(currentRightSelectionIndex, 1);
     }
     cycleComparisonSelections(side, -1);
@@ -368,8 +420,20 @@ function loadTransactionsPieChart(periodId1, periodId2, accountId) {
     const itemsForPeriod1 = getItemsForPeriodAndAccount(periodId1, accountId);
     const itemsForPeriod2 = getItemsForPeriodAndAccount(periodId2, accountId);
 
-    renderPieChart('transactionsPieChartLeft', itemsForPeriod1, 'left');
-    renderPieChart('transactionsPieChartRight', itemsForPeriod2, 'right');
+    if (itemsForPeriod1 != null) {
+        renderPieChart('transactionsPieChartLeft', itemsForPeriod1, 'left');
+    }
+    if (itemsForPeriod1 == null || itemsForPeriod1.length == 0) {
+        document.getElementById("graph-title-left").innerText = "Please add a transaction period";
+        buttonRemoveComparisonLeft.style.display = "none";
+    }
+    if (itemsForPeriod2 != null) {
+        renderPieChart('transactionsPieChartRight', itemsForPeriod2, 'right');
+    }
+    if (itemsForPeriod2 == null || itemsForPeriod2.length == 0) {
+        document.getElementById("graph-title-right").innerText = "Please add a transaction period";
+        buttonRemoveComparisonRight.style.display = "none";
+    }
 }
 
 function getItemsForPeriodAndAccount(periodId, accountId) {
@@ -468,7 +532,7 @@ function updatePreviewLabels(comparisonSide, currentOrder) {
     const rightArrowText = document.querySelector(`#${comparisonSide}ChartNextText .period-label`);
     const currentSelections = comparisonSide === "left" ? leftComparisonSelections : rightComparisonSelections;
     if (currentSelections == null || currentSelections.length < 2) {
-        if (currentSelections == null) {
+        if (currentSelections == null || currentSelections.length == 0) {
             graphTitle.innerText = "";
         } else {
             currentItem = currentSelections[currentOrder];
