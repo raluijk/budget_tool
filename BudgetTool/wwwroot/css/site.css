@@ -104,3 +104,13 @@ body {
     opacity: 0 !important;
     pointer-events: none;
 }
+
+.button {
+    background-color: #2776BC;
+    border: 2px solid black;
+    width: 25%;
+    margin-right: 0.8em;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+}

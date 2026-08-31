@@ -75,16 +75,6 @@
     justify-content: right;
 }
 
-.button {
-    background-color: #2776BC;
-    border: 2px solid black;
-    width: 25%;
-    margin-right: 0.8em;
-    border-radius: 4px;
-    cursor: pointer;
-    color: white;
-}
-
 html, body {
     height: 100%;
     margin: 0;

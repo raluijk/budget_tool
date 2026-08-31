@@ -4,30 +4,28 @@
 
 <link rel="stylesheet" href="~/css/budget.css" />
 
-<div class="budget-layout">
+<div id="parentContainer">
 
-    <div class="budget-table">
-        <div class="card rounded-0 border-0 shadow">
-            <div class="card-body p-5">
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Description</th>
-                                <th scope="col">Type</th>
-                                <th scope="col">Expense/Income</th>
-                                <th scope="col">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
-                <a class="btn btn-primary rounded-0 btn-block" id="insertRow" href="#">Add new row</a>
-                <a class="btn btn-primary rounded-0 btn-block" id="btnUpdate" href="#" onclick="enableTableCells()">Update</a>
-                <a class="btn btn-primary rounded-0 btn-block" id="btnCancel" href="#" onclick="disableTableCells()">Cancel</a>
-                <a class="btn btn-primary rounded-0 btn-block" id="saveChanges" href="#" onclick="updateBudgetForAccount()">Save Changes</a>
-            </div>
+    <div id="tableAndButtonsContainer">
+        <div id="tableContainer">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Description</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Expense/Income</th>
+                        <th scope="col">Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+        <div id="buttonContainer">
+            <div class="button" id="insertRow" href="#">Add new row</div>
+            <div class="button" id="btnUpdate" href="#" onclick="enableTableCells()">Update</div>
+            <div class="button" id="btnCancel" href="#" onclick="disableTableCells()">Cancel</div>
+            <div class="button" id="saveChanges" href="#" onclick="updateBudgetForAccount()">Save Changes</div>
         </div>
     </div>
 
