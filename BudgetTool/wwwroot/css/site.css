@@ -113,4 +113,5 @@ body {
     border-radius: 4px;
     cursor: pointer;
     color: white;
+    user-select: none;
 }

@@ -1,8 +1,7 @@
 ﻿"use strict"
 
 /*TODO:
-1. When Okay for selection is clicked, add it to db
-2. When remove is clicked, delete from db
+Add budget as comparable item. Pie chart will just render the data for the budget. If the button is clicked again just cycle transactions 0
 */
 
 let accountTransactionHistory = [];
@@ -13,6 +12,9 @@ let leftComparisonSelections = [];
 let rightComparisonSelections = [];
 let addButtonSideClicked;
 let accountId = 1;
+
+let leftBudgetShowButton = true;
+let rightBudgetShowButton = true;
 
 let yearsAndMonthsToCompare = [];
 
@@ -66,6 +68,8 @@ const buttonAddComparisonLeft = document.getElementById("btnAddComparisonLeft");
 const buttonAddComparisonRight = document.getElementById("btnAddComparisonRight");
 const buttonRemoveComparisonLeft = document.getElementById("btnRemoveComparisonLeft");
 const buttonRemoveComparisonRight = document.getElementById("btnRemoveComparisonRight");
+const buttonAddBudgetLeft = document.getElementById("btnAddBudgetLeft");
+const buttonAddBudgetRight = document.getElementById("btnAddBudgetRight");
 
 buttonCancel.addEventListener('click', () => {
     document.getElementById("yearAndMonthsMenuContainer").style.display = "none";
@@ -84,6 +88,17 @@ buttonAddComparisonRight.addEventListener('click', () => {
 
 buttonRemoveComparisonLeft.addEventListener('click', () => { removeComparison("left") });
 buttonRemoveComparisonRight.addEventListener('click', () => { removeComparison("right") });
+
+buttonAddBudgetLeft.addEventListener('click', () =>
+{
+    addBudgetToComparison("left", leftBudgetShowButton);
+    leftBudgetShowButton = !leftBudgetShowButton;
+});
+buttonAddBudgetRight.addEventListener('click', () =>
+{
+    addBudgetToComparison("right", rightBudgetShowButton);
+    rightBudgetShowButton = !rightBudgetShowButton;
+});
 
 buttonOkay.addEventListener('click', async () => {
     let selectionToAdd = {};
@@ -439,6 +454,11 @@ function loadTransactionsPieChart(periodId1, periodId2, accountId) {
 function getItemsForPeriodAndAccount(periodId, accountId) {
     const items = transactionItems.get(periodId) || [];
     return items.filter(item => item.accountId === accountId);
+}
+
+function addBudgetToComparison(side, showButtonSide) {
+    const button = document.getElementById(side === "left" ? "btnAddBudgetLeft" : "btnAddBudgetRight");
+    button.innerText = showButtonSide ? "Compare to Transactions" : "Compare to Budget";
 }
 
 function groupByCategoryTotal(items) {

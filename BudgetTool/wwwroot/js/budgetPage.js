@@ -1,13 +1,22 @@
-﻿let accountBudgetData;
+﻿/* TODO:
+1. Add ability to delete budget item
+2. Add ability to change category
+3. When category is selected or already in use, remove from JS array so it can't be selected again
+*/
+
+let accountBudgetData;
 let budgetPieChart;
 let accountId = 1;
 
 window.onload = async function () {
     showSpinner();
+    await getCategoriesForAccount(1);
     await loadBudgetForAccount(accountId);
     loadBudgetTable();
     loadBudgetPieChart();
     hideSpinner();
+    console.log("transactionCategories", transactionCategories);
+    console.log
 }
 
 async function loadBudgetForAccount(accountId) {
@@ -27,8 +36,8 @@ function loadBudgetTable() {
             currRow.remove();
         }
     }
+
     let tableBody = document.querySelector('table');
-    console.log("tableBody", tableBody);
     let headerRow = tableBody.insertRow(0);
     headerRow.insertCell(0).outerHTML = '<th scope="col">Description</th>';
     headerRow.insertCell(1).outerHTML = '<th scope="col">Type</th>';
@@ -40,7 +49,8 @@ function loadBudgetTable() {
         let item = accountBudgetData[i];
         console.log("item", item);
         currRow.insertCell(0).outerHTML = '<td>' + item.budgetItemDescription + '</td>';
-        currRow.insertCell(1).outerHTML = '<td>' + item.categoryLabel + '</td>';
+        currRow.insertCell(1).outerHTML = '<td>' + getCategorySelect(true) + '</td>';
+        currRow.cells[1].querySelector('select').value = item.categoryId;
         currRow.insertCell(2).outerHTML = '<td>' + item.budgetItemType + '</td>';
         currRow.insertCell(3).outerHTML = '<td>' + item.budgetItemAmount + '</td>';
         currRow.insertCell(4).outerHTML = '<td style="display:none">' + item.budgetItemId + '</td>';
@@ -48,6 +58,7 @@ function loadBudgetTable() {
 }
 
 async function updateBudgetForAccount() {
+    showSpinner();
     let tableBody = document.querySelector('table');
     let rows = tableBody.rows;
 
@@ -55,28 +66,50 @@ async function updateBudgetForAccount() {
 
     for (var i = 1; i < rows.length; i++) {
         let row = rows[i];
-        let description = getCellValue(row.cells[0]);
-        let category = getCellValue(row.cells[1]);
-        let amount = parseFloat(getCellValue(row.cells[3]));
-        let id = parseInt(getCellValue(row.cells[4]));
-
-        let currentBudgetItem = accountBudgetData.find(item => item.budgetItemId == id);
+        let description = getCellValue(row.cells[0], 'input');
+        let category = parseInt(getCellValue(row.cells[1], 'select'));
+        let type = getCellValue(row.cells[2], 'input');
+        let amount = parseFloat(getCellValue(row.cells[3], 'input'));
+        let id = parseInt(getCellValue(row.cells[4], 'input'));
+        console.log("accountBudgetData", accountBudgetData);
+        
 
         /* The description and category must be valid at least, and one of the values must have been changed */
-        if ((description && category) &&
-            (description != currentBudgetItem.budgetItemDescription ||
-                category != currentBudgetItem.categoryId ||
-                  amount != currentBudgetItem.budgetItemAmount)) {
-            updatedAccountBudgetData.push({
-                budgetItemId: id,
-                accountId: accountId,
-                description: description,
-                category: category,
-                amount: amount
-            });
+        if (description && category) {
+            let currentBudgetItem = accountBudgetData.find(item => item.budgetItemId == id);
+            console.log("currentBudgetItem", currentBudgetItem, "id", id);
+
+            if (currentBudgetItem == NaN || currentBudgetItem == undefined) {
+                console.log("currentBudgetItem is undefined or NaN, adding new budget item");
+                updatedAccountBudgetData.push({
+                    budgetItemId: id,
+                    accountId: accountId,
+                    budgetItemType: type,
+                    budgetItemDescription: description,
+                    categoryId: category,
+                    budgetItemAmount: amount
+                });
+            } else if (description != currentBudgetItem.budgetItemDescription ||
+                          category != currentBudgetItem.categoryId ||
+                amount != currentBudgetItem.budgetItemAmount) {
+                console.log("currentBudgetItem has changed, adding to updatedAccountBudgetData");
+                console.log("description", description, "currentBudgetItem.budgetItemDescription", currentBudgetItem.budgetItemDescription);
+                console.log("category", category, "currentBudgetItem.categoryId", currentBudgetItem.categoryId);
+                console.log("amount", amount, "currentBudgetItem.budgetItemAmount", currentBudgetItem.budgetItemAmount);
+                let updateIndex = accountBudgetData.findIndex(item => item.budgetItemId === id);
+                accountBudgetData.splice(updateIndex, 1);
+                updatedAccountBudgetData.push({
+                    budgetItemId: id,
+                    accountId: accountId,
+                    budgetItemType: type,
+                    budgetItemDescription: description,
+                    categoryId: category,
+                    budgetItemAmount: amount
+                });
+            }
         } /* Now we have an array of budget items where one of the fields were changed */
     }
-
+    console.log("updatedAccountBudgetData", updatedAccountBudgetData);
     if (updatedAccountBudgetData.length === 0) {
         return true; // nothing changed, nothing to save
     }
@@ -90,7 +123,10 @@ async function updateBudgetForAccount() {
             },
             body: JSON.stringify(updatedAccountBudgetData)
         });
+        console.log("JSON.stringify(updatedAccountBudgetData)", JSON.stringify(updatedAccountBudgetData));
         if (!response.ok) {
+            const errorBody = await response.text();
+            console.error("Server responded with error:", errorBody);
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
@@ -100,25 +136,36 @@ async function updateBudgetForAccount() {
     }
 
     /* Now we need to merge the updated and current budget items together */
-    for (const updatedItem in updatedAccountBudgetData) {
+    for (let i = 0; i < updatedAccountBudgetData.length; i++) {
+        const updatedItem = updatedAccountBudgetData[i];
+        console.log("updatedItem", updatedItem);
         const index = accountBudgetData.findIndex(item => item.budgetItemId === updatedItem.budgetItemId);
-        if (index !== 0) {
-            accountBudgetData[index] = { ...accountBudgetData[index], ...updatedItem };
+        console.log("index", index, "accountBudgetData", accountBudgetData);
+        if (index == -1) {
+            accountBudgetData.push(updatedItem);
         }
     }
 
-    budgetPieChart.data.labels = accountBudgetData.map(x => x.description);
-    budgetPieChart.data.datasets[0].data = accountBudgetData.map(x => x.amount);
-    budgetPieChart.update();
+    console.log("accountBudgetData after merge", accountBudgetData);
+
+    loadBudgetPieChart();
+    hideSpinner();
 }
 
-function getCellValue(cell) {
-    const input = cell.querySelector('input');
+function getCellValue(cell, elementType) {
+    console.log("cell", cell);
+    let textToReturn;
+    const input = cell.querySelector(elementType);
+    console.log("input", input, "VAL", cell.value);
     return input ? input.value : cell.innerText;
 }
 
 function loadBudgetPieChart() {
     const ctx = document.getElementById('budgetPieChart').getContext('2d');
+    if (budgetPieChart) {
+        budgetPieChart.destroy();
+    }
+    console.log("accountBudgetData", accountBudgetData);
     budgetPieChart = new Chart(ctx, {
         type: 'pie',
         data: {
@@ -144,10 +191,10 @@ $(function () {
         var cols = '';
 
         // Table columns
-        cols += '<td><input class="form-control rounded-0" type="text" name="description" placeholder="Description"></td>';
-        cols += '<td><input class="form-control rounded-0" type="text" name="category" placeholder="Category"></td>';
-        cols += '<td><input class="form-control rounded-0" type="text" name="income_expense" placeholder="Income/Expense"></td>';
-        cols += '<td><input class="form-control rounded-0" type="text" name="amount" placeholder="Amount"></td>';
+        cols += '<td><input class="updateCell" type="text" name="description" placeholder="Description"></td>';
+        cols += '<td>' + getCategorySelect() + '</td>';
+        cols += '<td><input class="updateCell" type="text" name="income_expense" placeholder="Income/Expense"></td>';
+        cols += '<td><input class="updateCell" type="text" name="amount" placeholder="Amount"></td>';
         cols += '<td><button class="btn btn-danger rounded-0" id ="deleteRow"><i class="fa fa-trash"></i></button</td>';
 
         // Insert the columns inside a row
@@ -155,6 +202,9 @@ $(function () {
 
         // Insert the row inside a table
         $("table").append(newRow);
+
+        const tableContainer = document.getElementById('tableContainer');
+        tableContainer.scrollTop = tableContainer.scrollHeight;
     });
 
     // Remove row when delete btn is clicked
@@ -167,12 +217,14 @@ $(function () {
 function enableTableCells() {
     document.querySelectorAll('td').forEach(td => {
         td.contentEditable = 'true';
+        td.classList.add("updateCell");
     });
 }
 
 function disableTableCells() {
     document.querySelectorAll('td').forEach(td => {
         td.contentEditable = 'false';
+        td.classList.remove("updateCell");
     });
     loadBudgetTable();
 }

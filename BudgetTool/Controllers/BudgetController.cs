@@ -67,14 +67,86 @@ namespace BudgetTool.Controllers
             {
                 Console.WriteLine("Connection failed.");
                 Console.WriteLine(e.Message);
-                return Json(e.Message);
+                return StatusCode(500, "Could not connect to the database.");
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateBudgetItems([FromQuery] decimal accountId)
+        [HttpPost]
+        public async Task<IActionResult> UpdateBudgetItems([FromBody] List<BudgetItem> budgetItems)
         {
-            return Json("");
+            
+            if (budgetItems == null || budgetItems.Count == 0)
+            {
+                return BadRequest("No budget items were provided.");
+            }
+
+            await using var connection = new NpgsqlConnection(ConnectionString);
+            try
+            {
+                await connection.OpenAsync();
+                await using var transaction = await connection.BeginTransactionAsync();
+
+                try
+                {
+                    foreach (var item in budgetItems)
+                    {
+                        if (item.BudgetItemId.HasValue)
+                        {
+                            await using var updateCommand = new NpgsqlCommand(
+                            """
+                            UPDATE budget_item
+                            SET budget_item_description = @description,
+                                category_id = @categoryId,
+                                budget_item_amount = @amount,
+                                budget_item_type = @type,
+                                last_modified_datetime = NOW()
+                            WHERE budget_item_id = @budgetItemId
+                              AND account_id = @accountId;
+                            """,
+                            connection, transaction);
+                            updateCommand.Parameters.AddWithValue("@description", item.BudgetItemDescription);
+                            updateCommand.Parameters.AddWithValue("@categoryId", item.CategoryId);
+                            updateCommand.Parameters.AddWithValue("@amount", item.BudgetItemAmount);
+                            updateCommand.Parameters.AddWithValue("@type", item.BudgetItemType);
+                            updateCommand.Parameters.AddWithValue("@budgetItemId", item.BudgetItemId);
+                            updateCommand.Parameters.AddWithValue("@accountId", item.AccountId);
+                            await updateCommand.ExecuteNonQueryAsync();
+                        }
+                        else
+                        {
+                            await using var insertCommand = new NpgsqlCommand(
+                                """
+                                INSERT INTO budget_item (account_id, budget_item_description, category_id, budget_item_amount, budget_item_type, last_modified_datetime)
+                                VALUES (@accountId, @description, @categoryId, @amount, @type, NOW());
+                                """,
+                                connection, transaction);
+                            insertCommand.Parameters.AddWithValue("@accountId", item.AccountId);
+                            insertCommand.Parameters.AddWithValue("@description", item.BudgetItemDescription);
+                            insertCommand.Parameters.AddWithValue("@categoryId", item.CategoryId);
+                            insertCommand.Parameters.AddWithValue("@amount", item.BudgetItemAmount);
+                            insertCommand.Parameters.AddWithValue("@type", item.BudgetItemType);
+                            await insertCommand.ExecuteNonQueryAsync();
+                        }
+                    }
+
+                    await transaction.CommitAsync();
+                    return Ok(new { success = true });
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Update failed.");
+                    Console.WriteLine(e.Message);
+                    await transaction.RollbackAsync();
+                    return StatusCode(500, "Failed to update budget items." + e.Message);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Connection failed.");
+                Console.WriteLine(e.Message);
+                return StatusCode(500, "Could not connect to the database." + e.Message);
+            }
         }
 
         [HttpPost]

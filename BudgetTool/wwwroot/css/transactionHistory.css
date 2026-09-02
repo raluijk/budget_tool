@@ -49,9 +49,10 @@
 #monthSelector {
     margin-bottom: 0.8em;
 }
-#monthSelector:empty {
-    min-height: 3em;
-}
+
+    #monthSelector:empty {
+        min-height: 3em;
+    }
 
 .year-option, .month-option {
     background-color: white;
@@ -62,12 +63,12 @@
     border-bottom: solid 2px grey;
 }
 
-.year-option:last-child, .month-option:last-child {
-    border-bottom: none;
-}
+    .year-option:last-child, .month-option:last-child {
+        border-bottom: none;
+    }
 
 .yearMonthDropdownShow {
-    z-index:1000;
+    z-index: 1000;
 }
 
 .button-container {
@@ -158,10 +159,10 @@ main {
     gap: 4px;
 }
 
-.preview-arrow-container img {
-    height: 0.9em;
-    width: 0.9em;
-}
+    .preview-arrow-container img {
+        height: 0.9em;
+        width: 0.9em;
+    }
 
 .graph-content {
     border: solid 2px grey;
@@ -196,7 +197,7 @@ main {
     color: white;
 }
 
-.add-comparison, .remove-comparison {
+.add-comparison, .remove-comparison, .add-budget {
     display: flex;
     width: 12%;
     justify-content: center;
@@ -210,18 +211,23 @@ main {
     width: 16%;
 }
 
-.add-comparison img, .remove-comparison img {
-    width: 1em;
-    height: 1em;
-    margin: auto;
-}
+    .add-comparison img, .remove-comparison img {
+        width: 1em;
+        height: 1em;
+        margin: auto;
+    }
 
-.add-comparison span, .remove-comparison span {
-    display: flex;
-    align-items: center;
-    margin: auto;
-}
+    .add-comparison span, .remove-comparison span, .add-budget span {
+        display: flex;
+        align-items: center;
+        margin: auto;
+    }
 
 #yearAndMonthsMenuContainer {
     display: none;
+}
+
+.add-budget {
+    left: 5%;
+    width: 25%;
 }

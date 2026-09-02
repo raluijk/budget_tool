@@ -1,8 +1,8 @@
 ﻿#parentContainer {
     display: flex;
     width: calc(90vw - var(--sidebar-width));
-    height: 65vh;
-    max-height: 65vh;
+    height: 85vh;
+    margin-top: 5%;
 }
 
 #tableAndButtonsContainer {
@@ -19,6 +19,7 @@
 
 #buttonContainer {
     display: flex;
+    flex-shrink: 0;
 }
 
 .button {
@@ -26,7 +27,8 @@
 }
 
 #tableContainer {
-    max-height: 50vh;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-color: #2776BC #f0f0f0;
@@ -45,9 +47,23 @@
         background-color: #f0f0f0;
     }
 
-thead th {
+    #tableContainer table {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+tr th {
     position: sticky;
     top: 0;
     background-color: white;
     z-index: 1;
+}
+
+.form-control {
+    flex-direction: column;
+}
+
+.updateCell {
+    border: 1px solid grey;
+    border-radius: 4px;
 }
