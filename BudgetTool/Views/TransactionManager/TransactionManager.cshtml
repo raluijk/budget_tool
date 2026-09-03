@@ -1,0 +1,37 @@
+﻿@{
+    ViewData["Title"] = "Manage Transactions";
+}
+
+<link rel="stylesheet" href="~/css/transactionManager.css" />
+
+<div id="parentContainer">
+
+    <div id="tableAndButtonsContainer">
+        <div id="tableContainer">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Description</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+        <div id="buttonContainer">
+            <div class="button" id="insertRow" href="#">Add new row</div>
+            <div class="button" id="btnUpdate" href="#" onclick="enableTableCells()">Update</div>
+            <div class="button" id="btnCancel" href="#" onclick="disableTableCells()">Cancel</div>
+            <div class="button" id="saveChanges" href="#" onclick="updateBudgetForAccount()">Save Changes</div>
+        </div>
+    </div>
+
+</div>
+
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <script src="~/js/transactionManager.js"></script>
+}
