@@ -7,27 +7,33 @@
 <div id="parentContainer">
 
     <div id="tableAndButtonsContainer">
-        <div id="tableContainer">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th scope="col">Description</th>
-                        <th scope="col">Type</th>
-                        <th scope="col">Amount</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                </tbody>
-            </table>
-        </div>
-        <div id="buttonContainer">
-            <div class="button" id="insertRow" href="#">Add new row</div>
-            <div class="button" id="btnUpdate" href="#" onclick="enableTableCells()">Update</div>
-            <div class="button" id="btnCancel" href="#" onclick="disableTableCells()">Cancel</div>
-            <div class="button" id="saveChanges" href="#" onclick="updateBudgetForAccount()">Save Changes</div>
+        <div id="tableAndSelectorRow">
+            <div id="tableAndButtonsColumn">
+                <div id="tableContainer">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Description</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div id="buttonContainer">
+                    <div class="button" id="insertRow">Add new row</div>
+                    <div class="button" id="btnUpdate" onclick="enableTableCells()">Update</div>
+                    <div class="button" id="btnCancel" onclick="disableTableCells()">Cancel</div>
+                    <div class="button" id="saveChanges" onclick="updateBudgetForAccount()">Save Changes</div>
+                </div>
+            </div>
+            <div id="periodSelector">
+                <div id="selectPeriod">Select Period</div>
+            </div>
         </div>
     </div>
-
 </div>
 
 

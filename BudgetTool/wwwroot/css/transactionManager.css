@@ -1,0 +1,78 @@
+﻿#tableAndButtonsContainer {
+    width: calc(80vw - var(--sidebar-width));
+    height: 80vh;
+    display: flex;
+}
+
+#tableAndSelectorRow {
+    display: flex;
+    flex-direction: row;
+    gap: 1em;
+    width: 100%;
+}
+
+#tableAndButtonsColumn {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#tableContainer {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+#buttonContainer {
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    margin-top: 1em;
+}
+
+#periodSelector {
+    width: 25%;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-self: flex-start;
+    margin-top: 3em;
+    height: 90%;
+}
+
+.button {
+    text-align: center;
+    margin-right: 1em;
+}
+
+#selectPeriod {
+    text-align: center;
+    background-color: #E6E9ED;
+    color: black;
+    padding: 1em;
+    border-top: solid 1px grey;
+    margin-top: auto;
+    cursor: pointer;
+}
+
+.yearPeriod {
+    padding: 0.2em;
+    margin: auto;
+    text-align: center;
+    background-color: #E6E9ED;
+    color: black;
+    user-select: none;
+}
+
+.month-option {
+    background-color: #E6E9ED;
+    text-align: center;
+    padding: 0.2em;
+    user-select: none;
+}
+
+.expanded, .monthsExpanded, #newPeriod, #selectPeriod {
+    border-bottom: solid 1px grey;
+}

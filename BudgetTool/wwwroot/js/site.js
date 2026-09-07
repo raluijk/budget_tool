@@ -40,3 +40,13 @@ function getCategorySelect(disabled) {
     console.log("categorySelect", categorySelect);
     return categorySelect;
 }
+
+async function getTransactionPeriods(accountId) {
+    var response = await fetch('/TransactionPeriod/GetTransactionPeriodsForAccount?accountId=' + accountId);
+    if (!response.ok) {
+        console.error("Could not load transaction periods. Status: " + response.status);
+        return;
+    }
+    let result = await response.json();
+    return result;
+}

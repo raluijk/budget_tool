@@ -51,6 +51,38 @@ namespace BudgetTool.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetTransactionPeriodsForAccount(int accountId)
+        {
+            await using var connection = new NpgsqlConnection(ConnectionString);
+            try
+            {
+                await connection.OpenAsync();
+                await using var command = new NpgsqlCommand("SELECT * FROM transaction_period WHERE transaction_period.account_id = @account_id;", connection);
+                command.Parameters.AddWithValue("account_id", accountId);
+                await using var reader = await command.ExecuteReaderAsync();
+                var transactionPeriod = new List<TransactionPeriod>();
+                while (await reader.ReadAsync())
+                {
+                    transactionPeriod.Add(new TransactionPeriod
+                    {
+                        TransactionPeriodId = reader.GetInt16(0),
+                        Month = reader.GetInt16(1),
+                        Year = reader.GetInt16(2),
+                        AccountID = reader.GetInt16(3)
+                    });
+                }
+                return Json(transactionPeriod);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Connection failed.");
+                Console.WriteLine(e.Message);
+                return Json(e.Message);
+            }
+        }
+
+        [HttpGet]
         public async Task<IActionResult> GetTransactionPeriodID(int month, int year, int accountId)
         {
             int transactionPeriodId = 0;
