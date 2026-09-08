@@ -76,3 +76,8 @@
 .expanded, .monthsExpanded, #newPeriod, #selectPeriod {
     border-bottom: solid 1px grey;
 }
+
+.selected {
+    border: 1px solid grey;
+    background-color: #D9D9D9;
+}

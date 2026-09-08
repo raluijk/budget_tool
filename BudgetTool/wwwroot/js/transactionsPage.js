@@ -38,7 +38,7 @@ const monthOrder = ["January", "February", "March", "April", "May", "June", "Jul
 window.onload = async function () {
     showSpinner();
     const graphs = document.querySelectorAll(".comparison-container");
-    await loadTransactionItems(1);
+    transactionItems = await loadTransactionItems(1);
     await loadTransactionHistory();
     await getComparisonSelections(1);
     let leftPeriodId, rightPeriodId;
@@ -125,7 +125,7 @@ buttonOkay.addEventListener('click', async () => {
         selectionSide: "left",
         selectionOrder: currentLeftSelectionIndex + 1
     };
-    loadTransactionItems(1, [selectedPeriod]);
+    transactionItems = await loadTransactionItems(1, [selectedPeriod]);
     if (addButtonSideClicked === "left") {
         if (leftComparisonSelections.some(cs => cs.periodId == selectedPeriod)) {
             const foundIndex = leftComparisonSelections.findIndex(cs => cs.periodId == selectedPeriod);
@@ -496,28 +496,6 @@ function renderPieChart(canvasId, items, side) {
         transactionsPieChartLeft = chart;
     } else {
         transactionsPieChartRight = chart;
-    }
-}
-
-async function loadTransactionItems(accountId, periodIds = null) {
-    const parameters = new URLSearchParams();
-    if (periodIds) {
-        periodIds.forEach(periodId => parameters.append('periodId', periodId));
-    }
-    parameters.append('accountId', 1);
-    var response = await fetch(`/TransactionItem/GetTransactionsForPeriod?${parameters.toString()}`);
-    if (!response.ok) {
-        console.error("Could not load transactions for account " + accountId + ". Status: " + response.status);
-        return;
-    }
-    const items = await response.json();
-    let currentItem;
-    for (let i = 0; i < items.length; i++) {
-        currentItem = items[i];
-        if (!transactionItems.has(currentItem.periodId)) {
-            transactionItems.set(currentItem.periodId, []);
-        }
-        transactionItems.get(currentItem.periodId).push(currentItem);
     }
 }
 
