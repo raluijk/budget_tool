@@ -1,0 +1,76 @@
+﻿@{
+    ViewData["Title"] = "Transaction Dashboard";
+}
+
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="parent">
+
+    <div id="titleBar" class="row1">
+        <div class="container"></div>
+    </div>
+
+    <div class="row2">
+        <div class="container stats">
+            <div class="icon-container">
+                <img src="/Images/scale-icon.svg" class="menu-icon dashboard-icon">
+            </div>
+            <div class="info-text">
+                <span>Total Spent</span>
+                <span id="spent"></span>
+                <span id="budget">Budget: </span>
+                <div id="spentBar"></div>
+            </div>
+        </div>
+        <div class="container stats">
+            <div class="icon-container">
+                <img src="/Images/scale-icon.svg" class="menu-icon dashboard-icon">
+            </div>
+            <div class="info-text">
+                <span>Remaining</span>
+                <span id="remaining"></span>
+                <span id="percentageRemaining"></span>
+                <div id="remainingBar"></div>
+            </div>
+        </div>
+        <div class="container stats">
+            <div class="icon-container">
+                <img src="/Images/scale-icon.svg" class="menu-icon dashboard-icon">
+            </div>
+            <div class="info-text">
+                <span>Over Budget</span>
+                <span id="over"></span>
+                <span id="percentageOver"></span>
+                <div id="overBar"></div>
+            </div>
+        </div>
+        <div class="container stats">
+            <div class="icon-container">
+                <img src="/Images/scale-icon.svg" class="menu-icon dashboard-icon">
+            </div>
+            <div class="info-text">
+                <span>Biggest Overspend</span>
+                <span id="biggestOverspendCategory"></span>
+                <span id="overSpendAmount"></span>
+                <div id="overspendBar"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row3">
+        <div class="row3-half">
+            <div class="container"></div>
+            <div class="container"></div>
+        </div>
+        <div class="row3-half">
+            <div class="container"></div>
+            <div class="container"></div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <script src="~/js/dashboard.js"></script>
+}

@@ -1,0 +1,68 @@
+﻿.parent {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 95vh;
+    width: calc(95vw - var(--sidebar-width));
+    margin: 0 auto;
+}
+
+.row1 {
+    display: flex;
+    gap: 10px;
+    height: 10%;
+    width: 100%;
+}
+
+    .row1 > div {
+        flex: 1;
+    }
+
+    .row1 .container {
+        width: 100%;
+    }
+
+.stats {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.info-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.row2 {
+    display: flex;
+    gap: 10px;
+    height: 20%;
+}
+
+    .row2 > div {
+        flex: 1;
+        margin: 2px;
+    }
+
+.row3 {
+    display: flex;
+    gap: 10px;
+    height: 70%;
+}
+
+.row3-half {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 10px;
+}
+
+.row3-half .container {
+    height: 50%;
+}
+
+.container {
+    border: 1px solid #d0d6d1;
+    border-radius: 4px;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}

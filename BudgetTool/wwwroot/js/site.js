@@ -4,6 +4,11 @@
 // Write your JavaScript code.
 let transactionCategories = [];
 
+const currencyFormatter = new Intl.NumberFormat('en-ZA', {
+    style: 'currency',
+    currency: 'ZAR',
+});
+
 const loadingSpinner = document.getElementById("loading-overlay");
 
 function showSpinner() {
