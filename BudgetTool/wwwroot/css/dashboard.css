@@ -1,4 +1,8 @@
-﻿.parent {
+﻿*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+.parent {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -19,7 +23,7 @@
     }
 
     .row1 .container {
-        width: 100%;
+        flex: 1;
     }
 
 .stats {
@@ -46,23 +50,29 @@
 
 .row3 {
     display: flex;
+    flex-direction: column;
     gap: 10px;
     height: 70%;
 }
 
-.row3-half {
-    display: flex;
-    flex-direction: column;
+#spendingByCategory {
     flex: 1;
-    gap: 10px;
 }
 
-.row3-half .container {
-    height: 50%;
+.row3-bottom {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    flex: 1;
 }
+
+    .row3-bottom .container {
+        flex: 1;
+    }
 
 .container {
     border: 1px solid #d0d6d1;
     border-radius: 4px;
     box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 5000px;/*   PLACEHOLDER, PLACEHOLDER, PLACEHOLDER   */
 }

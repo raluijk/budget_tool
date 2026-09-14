@@ -27,7 +27,7 @@
                 <img src="/Images/scale-icon.svg" class="menu-icon dashboard-icon">
             </div>
             <div class="info-text">
-                <span>Remaining</span>
+                <span id="remainingText">Remaining</span>
                 <span id="remaining"></span>
                 <span id="percentageRemaining"></span>
                 <div id="remainingBar"></div>
@@ -38,18 +38,7 @@
                 <img src="/Images/scale-icon.svg" class="menu-icon dashboard-icon">
             </div>
             <div class="info-text">
-                <span>Over Budget</span>
-                <span id="over"></span>
-                <span id="percentageOver"></span>
-                <div id="overBar"></div>
-            </div>
-        </div>
-        <div class="container stats">
-            <div class="icon-container">
-                <img src="/Images/scale-icon.svg" class="menu-icon dashboard-icon">
-            </div>
-            <div class="info-text">
-                <span>Biggest Overspend</span>
+                <span id="overspendText">Biggest Overspend</span>
                 <span id="biggestOverspendCategory"></span>
                 <span id="overSpendAmount"></span>
                 <div id="overspendBar"></div>
@@ -58,11 +47,8 @@
     </div>
 
     <div class="row3">
-        <div class="row3-half">
-            <div class="container"></div>
-            <div class="container"></div>
-        </div>
-        <div class="row3-half">
+        <div class="container" id="spendingByCategory"></div>
+        <div class="row3-bottom">
             <div class="container"></div>
             <div class="container"></div>
         </div>
